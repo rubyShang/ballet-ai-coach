@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#a8437a">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ballet Coach">
@@ -14,31 +17,32 @@
 <title>Ballet AI Coach</title>
 <style>
 /* Layout: camera stage on the left, live checks + last-rep analysis + log on the right; stacks on phones */
+/* White page and cards; pink only for the dancer and the accent (buttons, titles). One light look on purpose. */
 :root{
-  --bg:#f5f3f7; --surface:#ffffff; --fg:#201b26; --muted:#6c6577; --line:#e3deea;
-  --accent:#a8437a; --accent-ink:#ffffff; --ok:#1d8656; --bad:#cf3038; --na:#9a93a5;
-  --ph-flat:#6f86b0; --ph-demi:#e0a12a; --ph-point:#c2468a; --ph-off:#cf3038;
-  --font:"PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  --bg:#ffffff; --tint:#faf6f8; --surface:#ffffff; --fg:#4a2a3a; --muted:#8a6577; --line:#efe4e9;
+  --accent:#cf3577; --accent-soft:#ffe3ee; --accent-ink:#ffffff; --ok:#239063; --bad:#dc3550; --na:#d9c3cd;
+  --ph-flat:#7aa7e0; --ph-demi:#f2b33d; --ph-point:#b05ad6; --ph-off:#dc3550;
+  --font:"Nunito","PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  --display:"Fredoka","Nunito","PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#141118; --surface:#1f1b25; --fg:#eee9f3; --muted:#a39bae; --line:#353040;
-  --accent:#e27fb1; --accent-ink:#1a1220; --ok:#4cc58d; --bad:#ff6f6f; --na:#6f6879;
-  --ph-flat:#8ea6d4; --ph-demi:#f2b84a; --ph-point:#e27fb1; --ph-off:#ff6f6f; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--font);padding:16px}
 header{max-width:1200px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
-h1{font-size:22px;margin:0;letter-spacing:.02em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-h1 .module{font-size:13px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 10px;letter-spacing:0}
+h1{font-family:var(--display);font-weight:600;font-size:24px;margin:0;letter-spacing:.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--accent)}
+h1 .mini-dancer{width:56px;height:63px;flex:none;margin:-8px -4px -8px -8px}
+h2{font-family:var(--display);font-weight:600}
+h1 .module{font-family:var(--font);font-size:13px;font-weight:700;color:var(--accent);background:var(--tint);border-radius:999px;padding:2px 12px;letter-spacing:0}
 header p{margin:0;color:var(--muted);font-size:13px;flex:1 1 300px}
 .lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;align-self:center}
 .lang button{border:0;border-radius:0;padding:5px 12px;font-size:13px}
 .lang button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 main{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
 @media (max-width:820px){main{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
-.stage{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px}
+.stage{position:relative;background:#2b1a24;border-radius:20px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
 .stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .stage.mirror video,.stage.mirror canvas{transform:scaleX(-1)}
 .placeholder{color:#cfc8d8;text-align:center;padding:20px;font-size:14px;z-index:1;white-space:pre-line}
@@ -47,15 +51,16 @@ main{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:minmax(0,
 .chip i{width:12px;height:12px;border-radius:50%;background:var(--c,#999);display:inline-block}
 .chip small{font-weight:400;opacity:.8;font-size:12px}
 .controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
-button,select,label.btn{font:inherit;font-size:14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 12px;cursor:pointer}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button,select,label.btn{font:inherit;font-size:14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button:not(.primary):not(.link):hover{background:var(--tint)}
 button:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 button:disabled{opacity:.5;cursor:default}
 .status{font-size:13px;color:var(--muted);margin-top:8px;min-height:1.5em}
 h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 h2 small{font-weight:400;color:var(--muted);font-size:12px;text-align:right}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.checks li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;padding:7px 10px;border-radius:8px;border:1px solid var(--line)}
+.checks li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-radius:14px;border:1px solid var(--line)}
 .dot{width:12px;height:12px;border-radius:50%;background:var(--na)}
 .checks li[data-s="ok"] .dot{background:var(--ok)}
 .checks li[data-s="bad"] .dot{background:var(--bad)}
@@ -64,7 +69,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:12px;text-align:right}
 .checks .hint{display:block;font-weight:400;font-size:12px;color:var(--muted)}
 .checks .val{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);text-align:right;max-width:13em}
 .checks li[data-s="bad"] .val{color:var(--bad)}
-.timeline{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--bg);position:relative;margin:4px 0 2px}
+.timeline{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--tint);position:relative;margin:4px 0 2px}
 .timeline span{height:100%}
 .timeline .peak{position:absolute;top:0;bottom:0;width:2px;background:var(--fg)}
 .tl-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
@@ -74,7 +79,7 @@ h2 small{font-weight:400;color:var(--muted);font-size:12px;text-align:right}
 .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:10px}
 .meta b{color:var(--fg);font-size:20px;font-variant-numeric:tabular-nums;margin-right:4px}
 .reps{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px;max-height:220px;overflow:auto}
-.reps li{padding:5px 8px;border-radius:6px;background:var(--bg)}
+.reps li{padding:6px 10px;border-radius:12px;background:var(--tint)}
 .reps .good{color:var(--ok);font-weight:600}
 .reps .err{color:var(--bad)}
 .side{display:grid;gap:16px;align-content:start;min-width:0}
@@ -93,7 +98,7 @@ details summary{cursor:pointer;font-weight:600}
 button.rec-btn{border-color:var(--bad);color:var(--bad)}
 button.rec-btn.on{background:var(--bad);color:#fff}
 .recs{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.recs li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:7px 8px;border-radius:8px;background:var(--bg);font-size:13px}
+.recs li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:8px 10px;border-radius:14px;background:var(--tint);font-size:13px}
 .recs .info{flex:1 1 140px;min-width:0;font-variant-numeric:tabular-nums}
 .recs .info small{display:block;color:var(--muted);font-size:12px}
 .recs button{padding:3px 10px;font-size:12px}
@@ -106,6 +111,38 @@ button.rec-btn.on{background:var(--bad);color:#fff}
 .acct .who{flex:1 1 auto;font-size:13px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
 #syncState.ok{color:var(--ok)}
 #syncState.err{color:var(--bad)}
+/* ---------- sign-in gate ---------- */
+#gate{display:none}
+body.show-gate > header, body.show-gate > main, body.show-gate #report{display:none!important}
+body.show-gate{background:#ffffff}
+body.show-gate #gate{display:flex;min-height:100vh;align-items:center;justify-content:center;padding-block:24px}
+.gate-card{width:100%;max-width:360px;background:#ffffff;padding:20px 8px 26px;position:relative;text-align:center}
+.gate-card .lang{position:absolute;top:0;right:0}
+.gate-card .lang button{padding:3px 10px;font-size:12px}
+.dancer-hero{width:200px;height:213px;display:block;margin:8px auto 0}
+.brand{font-family:var(--display);font-weight:700;font-size:30px;color:var(--accent);margin:2px 0 18px;justify-content:center}
+.gate-step{display:grid;gap:12px}
+.gate-step input{font:inherit;font-size:16px;border:1.5px solid var(--line);border-radius:999px;padding:12px 18px;background:#ffffff;color:var(--fg);width:100%;text-align:center}
+.gate-step input::placeholder{color:#b9a3ae}
+.gate-step input:focus-visible{outline:none;border-color:var(--accent);background:#fff}
+#code{letter-spacing:.35em;font-variant-numeric:tabular-nums;font-size:20px}
+button.wide{width:100%;padding:13px;font-size:17px;font-family:var(--display);font-weight:600}
+.gate-hint{color:var(--muted);font-size:13px;margin:0}
+.gate-links{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+button.link{border:0;background:none;color:var(--accent);padding:2px 0;font-size:13px;box-shadow:none}
+button.link:disabled{color:var(--muted)}
+.gate-msg{color:var(--bad);font-size:13px;margin:12px 0 0;min-height:1em}
+.gate-msg.ok{color:var(--ok)}
+.gate-dots{display:flex;gap:8px;justify-content:center;padding:10px}
+.gate-dots i{width:9px;height:9px;border-radius:50%;background:var(--accent);opacity:.3;animation:dot 1.2s infinite}
+.gate-dots i:nth-child(2){animation-delay:.2s}.gate-dots i:nth-child(3){animation-delay:.4s}
+@keyframes dot{40%{opacity:1;transform:translateY(-3px)}}
+.d-bob{animation:bob 3s ease-in-out infinite;transform-origin:120px 240px}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-1.5deg)}}
+.d-tw{animation:twinkle 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.d-tw2{animation-delay:.8s}.d-tw3{animation-delay:1.6s}
+@keyframes twinkle{50%{opacity:.35;transform:scale(.75)}}
+@media (prefers-reduced-motion:reduce){.d-bob,.d-tw,.gate-dots i{animation:none}}
 .exports{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .exports button{padding:4px 10px;font-size:12px}
 .exports small{flex-basis:100%;color:var(--muted);font-size:12px}
@@ -115,8 +152,8 @@ button.rec-btn.on{background:var(--bad);color:#fff}
 body.show-report > header, body.show-report > main{display:none}
 body.show-report #report{display:block}
 .rp-bar{max-width:880px;margin:0 auto 12px;display:flex;justify-content:space-between;gap:8px}
-.rp{max-width:880px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px 28px 20px}
-.rp h1{font-size:24px;margin:0 0 4px}
+.rp{max-width:880px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px 28px 20px}
+.rp h1{font-family:var(--display);font-size:26px;margin:0 0 4px;color:var(--accent)}
 .rp h2{font-size:17px;margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--accent);display:block}
 .rp .sub{color:var(--muted);font-size:13px;margin:0}
 .rp-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -125,13 +162,13 @@ body.show-report #report{display:block}
 .tile .v{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
 .tile .v small{font-size:13px;font-weight:400;color:var(--muted);margin-left:4px}
 .focus{display:grid;gap:10px}
-.focus .item{border-left:4px solid var(--bad);padding:6px 12px;background:var(--bg);border-radius:0 8px 8px 0}
+.focus .item{border-left:4px solid var(--bad);padding:6px 12px;background:var(--tint);border-radius:0 8px 8px 0}
 .focus .item b{font-size:15px}
 .focus .item .cnt{color:var(--bad);font-size:13px;margin-left:8px;font-variant-numeric:tabular-nums}
 .focus .item p{margin:4px 0 0;font-size:13px}
-.good-msg{background:var(--bg);border-radius:8px;padding:10px 12px;color:var(--ok);font-weight:600}
+.good-msg{background:var(--tint);border-radius:8px;padding:10px 12px;color:var(--ok);font-weight:600}
 .rates{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr) 7.5em;gap:6px 10px;align-items:center;font-size:13px}
-.rates .bar{height:10px;background:var(--bg);border-radius:4px;overflow:hidden}
+.rates .bar{height:10px;background:var(--tint);border-radius:4px;overflow:hidden}
 .rates .bar span{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
 .rates .pct{font-variant-numeric:tabular-nums;text-align:right}
 .rates .pct.low{color:var(--bad);font-weight:600}
@@ -156,8 +193,8 @@ body.show-report #report{display:block}
 .rp-foot{margin-top:24px;font-size:11px;color:var(--muted);text-align:center}
 .note-sm{font-size:12px;color:var(--muted)}
 @media print{
-  :root{--bg:#f5f3f7;--surface:#fff;--fg:#201b26;--muted:#6c6577;--line:#e3deea;--accent:#a8437a;--ok:#1d8656;--bad:#cf3038;
-        --ph-flat:#6f86b0;--ph-demi:#e0a12a;--ph-point:#c2468a;--ph-off:#cf3038;color-scheme:light}
+  :root{--bg:#fff;--tint:#faf6f8;--surface:#fff;--fg:#4a2a3a;--muted:#8a6577;--line:#efe4e9;--accent:#cf3577;--ok:#239063;--bad:#dc3550;
+        --ph-flat:#7aa7e0;--ph-demi:#f2b33d;--ph-point:#b05ad6;--ph-off:#dc3550;color-scheme:light}
   @page{size:A4;margin:12mm}
   body{background:#fff;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .no-print{display:none!important}
@@ -167,8 +204,78 @@ body.show-report #report{display:block}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="dancer" viewBox="0 0 240 256">
+    <!-- floor shadow -->
+    <ellipse cx="128" cy="244" rx="62" ry="7" fill="#ffd9e8"/>
+    <g class="d-bob">
+      <!-- legs (drawn under the tutu): standing leg on pointe, working leg in tendu à la seconde -->
+      <path d="M118 146 L118 226" stroke="#ffd2df" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <path d="M125 146 L172 222" stroke="#ffd2df" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <!-- pointe shoes with ribbons -->
+      <rect x="112" y="220" width="12" height="20" rx="6" fill="#f47aa8"/>
+      <path d="M112 224 L124 230 M124 224 L112 230" stroke="#ffe3ee" stroke-width="1.6"/>
+      <path d="M168 216 L186 241" stroke="#f47aa8" stroke-width="11" stroke-linecap="round"/>
+      <path d="M168 222 L178 220 M170 228 L180 226" stroke="#ffe3ee" stroke-width="1.6"/>
+      <!-- tutu: two scalloped layers -->
+      <path d="M58 150 Q66 138 80 141 Q90 132 104 137 Q120 128 136 137 Q150 132 160 141 Q174 138 182 150 Q174 162 160 158 Q150 166 136 161 Q120 169 104 161 Q90 166 80 158 Q66 162 58 150 Z" fill="#ffc2da"/>
+      <path d="M70 146 Q80 136 96 140 Q108 132 120 137 Q132 132 144 140 Q160 136 170 146 Q160 156 144 153 Q132 159 120 154 Q108 159 96 153 Q80 156 70 146 Z" fill="#ffe0ec"/>
+      <!-- bodice -->
+      <path d="M104 104 Q120 98 136 104 L134 142 Q120 147 106 142 Z" fill="#f47aa8"/>
+      <path d="M106 112 Q120 118 134 112" stroke="#ffd2df" stroke-width="2" fill="none"/>
+      <!-- arms in high fifth -->
+      <path d="M106 108 C84 92 82 50 113 32" stroke="#ffe1d3" stroke-width="7.5" stroke-linecap="round" fill="none"/>
+      <path d="M134 108 C156 92 158 50 127 32" stroke="#ffe1d3" stroke-width="7.5" stroke-linecap="round" fill="none"/>
+      <!-- neck and head -->
+      <rect x="115" y="92" width="10" height="12" rx="4" fill="#ffe1d3"/>
+      <circle cx="120" cy="76" r="23" fill="#ffe8dc"/>
+      <!-- hair, bun and bow -->
+      <path d="M97 74 Q98 52 120 52 Q142 52 143 74 Q136 62 120 62 Q104 62 97 74 Z" fill="#7a4a35"/>
+      <circle cx="120" cy="48" r="10" fill="#7a4a35"/>
+      <path d="M108 44 L100 38 L101 50 Z M132 44 L140 38 L139 50 Z" fill="#ff8fb8"/>
+      <circle cx="120" cy="44" r="3" fill="#ff8fb8"/>
+      <!-- face: happy closed eyes, blush, smile -->
+      <path d="M107 79 Q111 75 115 79 M125 79 Q129 75 133 79" stroke="#5a3344" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+      <circle cx="105" cy="86" r="4.5" fill="#ff9fc0" opacity=".55"/>
+      <circle cx="135" cy="86" r="4.5" fill="#ff9fc0" opacity=".55"/>
+      <path d="M115 88 Q120 93 125 88" stroke="#d2557f" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </g>
+    <!-- sparkles and hearts -->
+    <path class="d-tw d-tw1" d="M46 64 L50 74 L60 78 L50 82 L46 92 L42 82 L32 78 L42 74 Z" fill="#ffc85c"/>
+    <path class="d-tw d-tw2" d="M196 40 L199 47 L206 50 L199 53 L196 60 L193 53 L186 50 L193 47 Z" fill="#ff8fb8"/>
+    <path class="d-tw d-tw3" d="M200 120 C200 114 208 114 208 120 C208 114 216 114 216 120 C216 128 208 132 208 134 C208 132 200 128 200 120 Z" fill="#ffb3cf"/>
+    <path class="d-tw d-tw2" d="M30 160 C30 155 37 155 37 160 C37 155 44 155 44 160 C44 167 37 170 37 172 C37 170 30 167 30 160 Z" fill="#ffd2e2"/>
+    <circle class="d-tw d-tw3" cx="62" cy="34" r="3" fill="#ffc85c"/>
+    <circle class="d-tw d-tw1" cx="214" cy="86" r="2.5" fill="#ffc85c"/>
+  </symbol>
+</svg>
+
+<section id="gate">
+  <div class="gate-card">
+    <div class="lang" role="group" aria-label="Language"><button data-lang="zh">中文</button><button data-lang="en">EN</button></div>
+    <svg class="dancer-hero" viewBox="0 0 240 256" role="img" aria-label="ballerina"><use href="#dancer"/></svg>
+    <h1 class="brand" data-i="title"></h1>
+    <div id="gLoading" class="gate-step"><div class="gate-dots"><i></i><i></i><i></i></div></div>
+    <div id="gEmail" class="gate-step" hidden>
+      <input type="email" id="email" data-ph="emailPh" autocomplete="email" inputmode="email" aria-label="email">
+      <button id="sendCode" class="primary wide" data-i="sendCode"></button>
+    </div>
+    <div id="gCode" class="gate-step" hidden>
+      <p id="codeSentMsg" class="gate-hint"></p>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" data-ph="codePh" aria-label="code">
+      <button id="verifyCode" class="primary wide" data-i="verify"></button>
+      <div class="gate-links"><button class="link" id="resendCode"></button><button class="link" id="changeEmail" data-i="changeEmail"></button></div>
+    </div>
+    <div id="gChild" class="gate-step" hidden>
+      <input id="childName" data-ph="dancerPh" autocomplete="off" aria-label="name">
+      <button id="addChild" class="primary wide" data-i="startPractice"></button>
+    </div>
+    <p class="gate-msg" id="gateMsg"></p>
+  </div>
+</section>
+
 <header>
-  <h1><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
+  <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer"/></svg><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
   <p data-i="subtitle"></p>
   <div class="lang" role="group" aria-label="Language">
     <button id="lang-zh" data-lang="zh">中文</button>
@@ -223,11 +330,6 @@ body.show-report #report{display:block}
   <aside class="side">
     <div class="card acct" id="acctCard" hidden>
       <h2><span data-i="account"></span> <small id="syncState"></small></h2>
-      <div id="acctOut">
-        <p class="note-sm" data-i="localOnly"></p>
-        <div class="row"><input type="email" id="email" data-ph="emailPh" autocomplete="email"><button id="sendCode" class="primary" data-i="sendCode"></button></div>
-        <div class="row" id="codeRow" hidden><input id="code" inputmode="numeric" autocomplete="one-time-code" data-ph="codePh"><button id="verifyCode" class="primary" data-i="verify"></button></div>
-      </div>
       <div id="acctIn" hidden>
         <div class="row"><span class="who" id="whoami"></span><button id="signOut" data-i="signOut"></button></div>
         <label for="dancerSel" data-i="dancer"></label>
@@ -424,10 +526,18 @@ const I18N = {
     recUnsupported:"这个浏览器不支持录制，请用电脑版 Chrome 或 Edge。", recFail:m=>"无法录制：" + m,
     recDone:"录好了，在右边「录像」里可以保存或重新分析。",
     leaveWarn:"还有没保存的录像或没上传完的数据，关掉页面会丢失。",
+    gateSub:"AI 帮孩子检查芭蕾基本功，从 tendu 开始。",
+    feat1:"摄像头实时检查膝盖、脚背和擦地路线", feat2:"每次练习自动生成报告，记录进步", feat3:"视频只留在你自己的设备上",
+    gateEmailLabel:"家长邮箱", gateEmailNote:"第一次使用会自动注册，不需要密码。我们会把验证码发到你的邮箱。",
+    codeLabel:"验证码", changeEmail:"换个邮箱", resend:"重新发送验证码", resendIn:s=>`${s} 秒后可重新发送`,
+    codeResent:"验证码已重新发送。", badCode:"验证码不对或已过期，请再试一次。", badEmail:"请输入正确的邮箱地址。",
+    inviteOnly:"这个邮箱还没有开通，请联系邀请你的人。",
+    welcome:"欢迎！最后一步：", childLabel:"孩子的名字（之后还可以添加）", startPractice:"开始跳舞吧",
+    gatePrivacy:"每个家庭的数据互相独立，只有你自己的账号能看到。",
     account:"账号与同步", localOnly:"登录后，练习结果会同步到云端，换手机或电脑也能看。不登录也能用，数据只存在这台设备上。",
-    emailPh:"你的邮箱", sendCode:"发送验证码", codePh:"邮件里的验证码", verify:"登录",
-    codeSent:e=>`验证码已发到 ${e}，没收到请看看垃圾邮件。`, signedInAs:e=>"已登录：" + e, signOut:"退出",
-    dancer:"现在练习的孩子", addDancer:"添加孩子", dancerPh:"孩子的名字",
+    emailPh:"家长邮箱", sendCode:"发送验证码", codePh:"验证码", verify:"进入",
+    codeSent:e=>`验证码已发到 ${e}`, signedInAs:e=>"已登录：" + e, signOut:"退出",
+    dancer:"现在练习的孩子", addDancer:"添加孩子", dancerPh:"小舞者的名字",
     needDancer:"先添加孩子的名字，练习结果会存在她的名下。",
     syncOk:"✓ 已同步", syncPending:n=>`${n} 条等待上传…`, syncErr:"上传失败，稍后自动重试",
     authErr:m=>"出错了：" + m, loadingHist:"正在读取…",
@@ -530,10 +640,18 @@ const I18N = {
     recUnsupported:"This browser can't record. Use Chrome or Edge on a computer.", recFail:m=>"Couldn't record: " + m,
     recDone:"Recording finished. Save it or analyze it again under Recordings.",
     leaveWarn:"You have unsaved recordings or data still uploading that will be lost.",
+    gateSub:"AI feedback on ballet technique, starting with tendu.",
+    feat1:"Live camera checks for knees, feet and the brushing path", feat2:"A report after every practice, with progress over time", feat3:"Videos stay on your own device",
+    gateEmailLabel:"Parent's email", gateEmailNote:"First time here? Your account is created automatically, with no password. We'll email you a sign-in code.",
+    codeLabel:"Sign-in code", changeEmail:"Use a different email", resend:"Resend code", resendIn:s=>`Resend in ${s}s`,
+    codeResent:"We sent the code again.", badCode:"That code is wrong or has expired. Try again.", badEmail:"Enter a valid email address.",
+    inviteOnly:"This email hasn't been invited yet. Ask the person who shared the app with you.",
+    welcome:"Welcome! One last step:", childLabel:"Your dancer's name (you can add more later)", startPractice:"Let's dance",
+    gatePrivacy:"Each family's data is separate and visible only to its own account.",
     account:"Account & sync", localOnly:"Sign in to sync results to the cloud and see them on any phone or computer. Without signing in, data stays on this device.",
-    emailPh:"Your email", sendCode:"Send code", codePh:"Code from the email", verify:"Sign in",
-    codeSent:e=>`We sent a code to ${e}. Check your spam folder if it doesn't arrive.`, signedInAs:e=>"Signed in: " + e, signOut:"Sign out",
-    dancer:"Dancer practicing now", addDancer:"Add dancer", dancerPh:"Dancer's name",
+    emailPh:"Parent's email", sendCode:"Send code", codePh:"6-digit code", verify:"Let's go",
+    codeSent:e=>`Code sent to ${e}`, signedInAs:e=>"Signed in: " + e, signOut:"Sign out",
+    dancer:"Dancer practicing now", addDancer:"Add dancer", dancerPh:"Your dancer's name",
     needDancer:"Add your dancer's name first; results are saved under her name.",
     syncOk:"✓ Synced", syncPending:n=>`${n} waiting to upload…`, syncErr:"Upload failed, retrying soon",
     authErr:m=>"Something went wrong: " + m, loadingHist:"Loading…",
@@ -644,7 +762,7 @@ function applyLang(){
   renderReps();
   renderRecs(); updateRecUI(); updateFrameInfo();
   if (lastRep) showRep(lastRep);
-  if (typeof renderAcct === "function"){ renderAcct(); renderHistList(); }
+  if (typeof renderAcct === "function"){ renderAcct(); renderHistList(); renderGate(); }
   if (document.body.classList.contains("show-report")) renderReport(reportCtx);
   if (lastDir !== undefined) $("dirChip").querySelector("span").textContent = lastDir ? DIRS[lastDir] : t("dirUnknown");
 }
@@ -1458,11 +1576,48 @@ function loadScript(src){
 let acctMsg = null;
 function setAcctMsg(key, arg){ acctMsg = key ? [key, arg] : null; $("acctMsg").textContent = key ? t(key, arg) : ""; }
 
+// sign-in gate: "loading" | "email" | "code" | "child" | null (app visible)
+let gateStep = null, gateMsg = null, lastEmail = "", resendAt = 0, resendTimer = 0;
+function gate(step){
+  gateStep = step;
+  document.body.classList.toggle("show-gate", !!step);
+  for (const [id, st] of [["gLoading", "loading"], ["gEmail", "email"], ["gCode", "code"], ["gChild", "child"]]) $(id).hidden = st !== step;
+  const focus = { email: "email", code: "code", child: "childName" }[step];
+  if (focus) setTimeout(() => $(focus).focus(), 50);
+}
+function setGateMsg(key, arg, ok){
+  gateMsg = key ? [key, arg, ok] : null;
+  $("gateMsg").textContent = key ? t(key, arg) : "";
+  $("gateMsg").classList.toggle("ok", !!ok);
+}
+function renderGate(){
+  if (gateMsg) setGateMsg(...gateMsg);
+  if (lastEmail) $("codeSentMsg").textContent = t("codeSent", lastEmail);
+  tickResend();
+}
+function tickResend(){
+  const left = Math.ceil((resendAt - Date.now()) / 1000), b = $("resendCode");
+  b.disabled = left > 0;
+  b.textContent = left > 0 ? t("resendIn", left) : t("resend");
+  clearTimeout(resendTimer);
+  if (left > 0) resendTimer = setTimeout(tickResend, 1000);
+}
+async function sendCodeTo(email){
+  const { error } = await cloud.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: CONF.allowSignup !== false } });
+  if (error){
+    const invite = /signup|not allowed|not found/i.test(error.message || "");
+    setGateMsg(invite ? "inviteOnly" : "authErr", error.message);
+    return false;
+  }
+  lastEmail = email; resendAt = Date.now() + 60000; tickResend();
+  return true;
+}
+
 async function cloudInit(){
   if (!cloud.enabled) return;
-  $("acctCard").hidden = false;
+  gate("loading");
   try { if (!window.supabase) await loadScript(SUPA_JS); }
-  catch(e){ setAcctMsg("authErr", e.message); return; }
+  catch(e){ gate(null); setAcctMsg("authErr", e.message); return; }       // offline: let the app work device-only
   cloud.sb = window.supabase.createClient(CONF.supabaseUrl, CONF.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } });
   // run Supabase calls outside the auth callback (calling it from inside can deadlock)
   cloud.sb.auth.onAuthStateChange((_ev, session) => setTimeout(() => onUser(session ? session.user : null), 0));
@@ -1470,12 +1625,16 @@ async function cloudInit(){
 async function onUser(user){
   const changed = (user && user.id) !== (cloud.user && cloud.user.id);
   cloud.user = user;
-  if (!user){ cloud.dancers = []; cloud.dancerId = null; renderAcct(); loadHistoryList(); return; }
-  if (changed) await loadDancers(); else renderAcct();
+  if (!user){
+    if (reps.length) newSession();
+    cloud.dancers = []; cloud.dancerId = null; renderAcct(); loadHistoryList(); gate("email"); return;
+  }
+  if (changed){ gate("loading"); await loadDancers(); } else renderAcct();
+  gate(cloud.dancers.length ? null : "child");
 }
 async function loadDancers(){
   const { data, error } = await cloud.sb.from("dancers").select("id,name").order("created_at");
-  if (error){ setAcctMsg("authErr", error.message); return; }
+  if (error){ setAcctMsg("authErr", error.message); setGateMsg("authErr", error.message); return; }
   cloud.dancers = data || [];
   const saved = lsGet("ballet-dancer");
   cloud.dancerId = (cloud.dancers.find(d => d.id === saved) || cloud.dancers[0] || {}).id || null;
@@ -1484,7 +1643,7 @@ async function loadDancers(){
 function renderAcct(){
   if (!cloud.enabled) return;
   const inn = !!cloud.user;
-  $("acctOut").hidden = inn; $("acctIn").hidden = !inn;
+  $("acctCard").hidden = !inn; $("acctIn").hidden = !inn;
   if (inn){
     $("whoami").textContent = t("signedInAs", cloud.user.email || "");
     const sel = $("dancerSel"); sel.innerHTML = "";
@@ -1507,21 +1666,45 @@ function renderSync(){
 
 $("sendCode").addEventListener("click", async () => {
   const email = $("email").value.trim();
-  if (!email || !cloud.sb) return;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ setGateMsg("badEmail"); return; }
+  if (!cloud.sb) return;
   $("sendCode").disabled = true;
-  const { error } = await cloud.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  const ok = await sendCodeTo(email);
   $("sendCode").disabled = false;
-  if (error){ setAcctMsg("authErr", error.message); return; }
-  $("codeRow").hidden = false; $("code").focus();
-  setAcctMsg("codeSent", email);
+  if (!ok) return;
+  setGateMsg(null); $("code").value = "";
+  $("codeSentMsg").textContent = t("codeSent", email);
+  gate("code");
 });
+$("resendCode").addEventListener("click", async () => {
+  if (Date.now() < resendAt || !lastEmail) return;
+  if (await sendCodeTo(lastEmail)) setGateMsg("codeResent", null, true);
+});
+$("changeEmail").addEventListener("click", () => { setGateMsg(null); gate("email"); });
 $("verifyCode").addEventListener("click", async () => {
-  const email = $("email").value.trim(), token = $("code").value.trim();
-  if (!email || !token) return;
-  const { error } = await cloud.sb.auth.verifyOtp({ email, token, type: "email" });
-  if (error){ setAcctMsg("authErr", error.message); return; }
-  setAcctMsg(null); $("code").value = ""; $("codeRow").hidden = true;
+  const token = $("code").value.replace(/\s/g, "");
+  if (!lastEmail || !token) return;
+  $("verifyCode").disabled = true;
+  const { error } = await cloud.sb.auth.verifyOtp({ email: lastEmail, token, type: "email" });
+  $("verifyCode").disabled = false;
+  if (error){ setGateMsg("badCode"); return; }
+  setGateMsg(null); gate("loading");                      // onAuthStateChange takes it from here
 });
+$("addChild").addEventListener("click", async () => {
+  const name = $("childName").value.trim();
+  if (!name) return;
+  $("addChild").disabled = true;
+  const { data, error } = await cloud.sb.from("dancers").insert({ name }).select("id,name").single();
+  $("addChild").disabled = false;
+  if (error){ setGateMsg("authErr", error.message); return; }
+  $("childName").value = ""; setGateMsg(null);
+  cloud.dancers.push(data);
+  switchDancer(data.id);
+  gate(null);
+});
+// Enter key moves each gate step forward
+[["email", "sendCode"], ["code", "verifyCode"], ["childName", "addChild"]].forEach(([inp, btn]) =>
+  $(inp).addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); $(btn).click(); } }));
 $("signOut").addEventListener("click", async () => { await cloud.sb.auth.signOut(); });
 $("addDancer").addEventListener("click", async () => {
   const name = $("dancerName").value.trim();
