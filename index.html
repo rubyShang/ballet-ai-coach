@@ -57,6 +57,12 @@ button:not(.primary):not(.link):hover{background:var(--tint)}
 button:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 button:disabled{opacity:.5;cursor:default}
 .status{font-size:13px;color:var(--muted);margin-top:8px;min-height:1.5em}
+.ctl-groups{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;align-items:stretch}
+.ctl-group{background:var(--tint);border:1px solid var(--line);border-radius:22px;padding:8px 10px 10px;display:grid;gap:6px;align-content:start;min-width:0}
+.ctl-label{font-size:12px;font-weight:700;color:var(--muted);padding-left:6px}
+.ctl-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctl-row button,.ctl-row select,.ctl-row label.btn{padding:6px 11px;font-size:13.5px}
+.ctl-group{padding:7px 8px 8px}
 h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 h2 small{font-weight:400;color:var(--muted);font-size:12px;text-align:right}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
@@ -418,26 +424,34 @@ body.show-report #report{display:block}
       <div class="frame-guide" id="frameGuide" hidden></div>
       <div class="chip rec-chip" id="recChip" hidden><i style="--c:#ff3b3b"></i><span></span></div>
     </div>
-    <div class="controls">
-      <button class="primary" id="camBtn" data-i="camBtn"></button>
-      <select id="facing" aria-label="camera">
-        <option value="user" data-i="facingUser"></option>
-        <option value="environment" data-i="facingEnv"></option>
-      </select>
-      <label class="btn"><span data-i="upload"></span><input type="file" id="fileInput" accept="video/*" hidden></label>
-      <select id="speed" aria-label="speed">
-        <option value="0.25" data-i="speed025"></option>
-        <option value="0.5" data-i="speed05" selected></option>
-        <option value="1" data-i="speed1"></option>
-      </select>
-      <button id="stopBtn" data-i="stop" disabled></button>
-    </div>
-    <div class="controls">
-      <button id="recBtn" class="rec-btn" disabled></button>
-      <select id="recMode" aria-label="recording">
-        <option value="annotated" data-i="recAnnotated"></option>
-        <option value="raw" data-i="recRaw"></option>
-      </select>
+    <div class="ctl-groups">
+      <div class="ctl-group">
+        <span class="ctl-label" data-i="grpCam"></span>
+        <div class="ctl-row">
+          <button class="primary" id="camBtn" data-i="camBtn"></button>
+          <select id="facing" aria-label="camera">
+            <option value="user" data-i="facingUser"></option>
+            <option value="environment" data-i="facingEnv"></option>
+          </select>
+          <button id="recBtn" class="rec-btn" disabled></button>
+          <select id="recMode" aria-label="recording">
+            <option value="annotated" data-i="recAnnotated"></option>
+            <option value="raw" data-i="recRaw"></option>
+          </select>
+          <button id="stopBtn" data-i="stop" disabled></button>
+        </div>
+      </div>
+      <div class="ctl-group">
+        <span class="ctl-label" data-i="grpFile"></span>
+        <div class="ctl-row">
+          <label class="btn"><span data-i="upload"></span><input type="file" id="fileInput" accept="video/*" hidden></label>
+          <select id="speed" aria-label="speed">
+            <option value="0.25" data-i="speed025"></option>
+            <option value="0.5" data-i="speed05" selected></option>
+            <option value="1" data-i="speed1"></option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="legend" data-mod="plie">
       <span style="--c:var(--ph-flat)" data-i="pp_stand"></span>
@@ -512,6 +526,8 @@ body.show-report #report{display:block}
     <div class="card">
       <h2 data-i="recsTitle"></h2>
       <ul class="recs" id="recs"></ul>
+      <p class="note-sm" id="recStore"></p>
+      <label class="note-sm"><input type="checkbox" id="recAutoDl"> <span data-i="recAutoDlLabel"></span></label>
     </div>
 
     <div class="card">
@@ -703,7 +719,7 @@ const I18N = {
     // status
     loading:"正在加载识别模型…", camDenied:"摄像头权限被拒绝了，请在浏览器地址栏旁边允许使用摄像头后再试。",
     camFail:m=>"无法开启：" + m, modelFail:m=>"模型加载失败：" + m,
-    camOn:"摄像头已开启。站到全身都能拍到的位置。", fileOn:"正在分析视频（循环播放）。", stopped:"已停止。",
+    camOn:"摄像头已开启。站到全身都能拍到的位置。", fileOn:"正在分析视频…", fileDone:n=>`视频分析完成：共 ${n} 次。点「生成报告」查看，或在右边看每次的结果。`, stopped:"已停止。",
     // legs / directions
     left:"左腿", right:"右腿", legInfo:(l,a)=>"动作腿：" + l + (a ? "（自动）" : ""), legNone:"动作腿：—",
     dirUnknown:"方向未知",
@@ -738,13 +754,13 @@ const I18N = {
     // log
     repLine:(n,d,s)=>`第 ${n} 次 · ${d} · ${s} · `, allCorrect:"全部做对", noReps:"还没有记录", sep:"、",
     // recording
-    recStart:"● 开始录制", recStop:"■ 停止录制", recAnnotated:"录制：带分析标注", recRaw:"录制：原始画面",
-    recsTitle:"录像", recsEmpty:"开启摄像头或上传视频后，点「开始录制」。录像暂存在这个页面里，关掉页面前记得点「保存」下载到电脑。",
+    recStart:"● 开始录制", recStop:"■ 停止录制", recAnnotated:"带分析标注", recRaw:"原始画面", grpCam:"摄像头", grpFile:"分析视频",
+    recsTitle:"录像", recsEmpty:"开启摄像头或上传视频后，点「开始录制」。录像会边录边存到这台设备上，每 5 分钟自动分成一段。",
     recAnalyze:"放进来分析", recSave:"保存", recDelete:"删除", recSaved:"已保存",
     tagAnnotated:"带标注", tagRaw:"原始画面", recRawOnlyCam:"上传的视频只能录「带分析标注」版本。",
     recUnsupported:"这个浏览器不支持录制，请用电脑版 Chrome 或 Edge。", recFail:m=>"无法录制：" + m,
     recDone:"录好了，在右边「录像」里可以保存或重新分析。",
-    leaveWarn:"还有没保存的录像或没上传完的数据，关掉页面会丢失。",
+    leaveWarn:"还在录像，或者还有数据没上传完，现在关掉页面可能会丢失最后一点内容。",
     fgNobody:"没看到人", fgNobodyHint:"请站到镜头前，全身入镜",
     fgFeet:"脚没有拍到", fgFeetHint:"请把镜头往下移，或者站远一点",
     fgHead:"头没有拍到", fgHeadHint:"请把镜头往上移，或者站远一点",
@@ -784,6 +800,9 @@ const I18N = {
     drFoot:"家长记录，仅供参考，不是医疗诊断",
     n_hyperext:"支撑腿膝盖不超伸", c_hyperext:"支撑腿膝盖不要往后顶", needSide:"需侧面拍", hyperOk:"正常", hyperBad:d=>`往后顶 ${d}°`,
     t_hyperext:"站立腿要拉直但不锁死：想象膝盖轻轻往前、往上提，而不是往后压。", sHyper:"支撑腿膝盖超伸：最多几度",
+    recPart:n=>`第 ${n} 段`, recRecovered:"已恢复", recConfirmDelete:"确定删除这段录像吗？",
+    recStoreNote:m=>`录像保存在这台设备上（共 ${m} MB），关掉页面也不会丢。点「保存」可以存到相册或文件夹，存好后可以删除以腾出空间。`,
+    recMemOnly:"这个浏览器不能把录像存到设备上（可能是无痕模式），录完请马上点「保存」。", recAutoDlLabel:"每段录完自动下载（电脑上推荐）",
     mod_tendu:"Tendu 擦地", mod_plie:"Plié 蹲",
     pos_first:"一位", pos_second:"二位", both:"双腿", posInfo:(p,a)=>"脚位：" + p + (a ? "（自动）" : ""),
     pp_stand:"直立", pp_down:"下蹲", pp_bottom:"最低点", pp_up:"上升", lgGuide:"膝盖→脚尖参考线",
@@ -907,7 +926,7 @@ const I18N = {
     tip5:"Do a few slow tendus first and check that the top-left label moves flat → demi-pointe → full point correctly; if not, adjust the two Foot phase sliders",
     loading:"Loading the pose model…", camDenied:"Camera access was blocked. Allow the camera next to the address bar, then try again.",
     camFail:m=>"Couldn't start: " + m, modelFail:m=>"Couldn't load the model: " + m,
-    camOn:"Camera on. Stand where your whole body is in frame.", fileOn:"Analyzing the video (looping).", stopped:"Stopped.",
+    camOn:"Camera on. Stand where your whole body is in frame.", fileOn:"Analyzing the video…", fileDone:n=>`Video analyzed: ${n} reps. Tap Report to see the results.`, stopped:"Stopped.",
     left:"Left leg", right:"Right leg", legInfo:(l,a)=>"Working leg: " + l + (a ? " (auto)" : ""), legNone:"Working leg: —",
     dirUnknown:"Direction unknown",
     n_workKnee:"Working knee straight", h_workKnee:"Straight all the way out and back in", c_workKnee:"Straighten your working knee",
@@ -936,13 +955,13 @@ const I18N = {
     noFacing:"Can't tell which way she's facing. Pick the direction in Settings.", repUnclear:"The feet weren't clear this time.",
     secondeSide:"Film à la seconde from the front.", sideFor:d=>"Film " + d + " from the side for a more accurate path and heel timing.",
     repLine:(n,d,s)=>`#${n} · ${d} · ${s} · `, allCorrect:"All correct", noReps:"No tendus yet", sep:", ",
-    recStart:"● Record", recStop:"■ Stop recording", recAnnotated:"Record: with analysis overlay", recRaw:"Record: raw video",
-    recsTitle:"Recordings", recsEmpty:"Start the camera or upload a video, then tap Record. Recordings live in this page until you close it, so tap Save to download them.",
+    recStart:"● Record", recStop:"■ Stop recording", recAnnotated:"With analysis overlay", recRaw:"Raw video", grpCam:"Camera", grpFile:"Analyze a video",
+    recsTitle:"Recordings", recsEmpty:"Start the camera or upload a video, then tap Record. Video is saved to this device as it records, in 5-minute parts.",
     recAnalyze:"Analyze", recSave:"Save", recDelete:"Delete", recSaved:"Saved",
     tagAnnotated:"overlay", tagRaw:"raw", recRawOnlyCam:"Uploaded videos can only be recorded with the analysis overlay.",
     recUnsupported:"This browser can't record. Use Chrome or Edge on a computer.", recFail:m=>"Couldn't record: " + m,
     recDone:"Recording finished. Save it or analyze it again under Recordings.",
-    leaveWarn:"You have unsaved recordings or data still uploading that will be lost.",
+    leaveWarn:"Recording or uploading is still in progress; closing now may lose the last bit.",
     fgNobody:"No one in view", fgNobodyHint:"Stand in front of the camera with your whole body in the picture",
     fgFeet:"Feet aren't in the picture", fgFeetHint:"Tilt the camera down or step back a little",
     fgHead:"Head isn't in the picture", fgHeadHint:"Tilt the camera up or step back a little",
@@ -982,6 +1001,9 @@ const I18N = {
     drFoot:"Recorded by a parent, for reference only, not a medical diagnosis",
     n_hyperext:"Standing knee not pushed back", c_hyperext:"Don't lock your standing knee back", needSide:"Side view needed", hyperOk:"OK", hyperBad:d=>`Pushed back ${d}°`,
     t_hyperext:"Straighten the standing leg without locking it: think of lifting the knee slightly forward and up, not pressing it back.", sHyper:"Standing knee hyperextension: at most",
+    recPart:n=>`part ${n}`, recRecovered:"recovered", recConfirmDelete:"Delete this recording?",
+    recStoreNote:m=>`Recordings are kept on this device (${m} MB in total) and survive closing the page. Tap Save to put one in Photos or a folder, then delete it here to free space.`,
+    recMemOnly:"This browser can't store recordings on the device (private browsing?), so tap Save right after recording.", recAutoDlLabel:"Download each part automatically when it finishes (good on computers)",
     mod_tendu:"Tendu", mod_plie:"Plié",
     pos_first:"1st position", pos_second:"2nd position", both:"Both legs", posInfo:(p,a)=>"Position: " + p + (a ? " (auto)" : ""),
     pp_stand:"Standing", pp_down:"Going down", pp_bottom:"Bottom", pp_up:"Coming up", lgGuide:"Knee → toe guide",
@@ -1218,7 +1240,7 @@ async function startCamera(){
 async function startFile(file){
   stop();
   try { await ensureModel(); } catch(e){ setStatus("modelFail", e.message || String(e)); return; }
-  video.srcObject = null; video.src = URL.createObjectURL(file); video.loop = true;
+  video.srcObject = null; video.src = URL.createObjectURL(file); video.loop = false;   // play once so every rep is counted once
   stage.classList.remove("mirror");
   await video.play(); video.playbackRate = +$("speed").value;
   mode = "file"; begin();
@@ -1239,6 +1261,16 @@ function stop(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   $("frameGuide").hidden = true; frameShown = null;
 }
+video.addEventListener("ended", () => {
+  if (mode !== "file" || !running) return;
+  setTimeout(() => {
+    stopRec();
+    running = false; cancelAnimationFrame(rafId); updateRecUI();
+    $("stopBtn").disabled = true;
+    setStatus("fileDone", reps.length);
+    if (cfg.sound && audioCtx && audioCtx.state === "running") tone(1046.5, audioCtx.currentTime, 0.4);
+  }, 300);
+});
 $("camBtn").addEventListener("click", startCamera);
 $("fileInput").addEventListener("change", e => { const f = e.target.files[0]; if (f) startFile(f); e.target.value = ""; });
 $("stopBtn").addEventListener("click", () => { stop(); setStatus("stopped"); });
@@ -1259,11 +1291,44 @@ function loop(){
 // "with overlay" records a canvas that combines the video, the skeleton/trail and the labels;
 // "raw" records the camera stream directly (better for analyzing again later).
 // Frames are stored unmirrored so left/right stay correct when a recording is analyzed again.
+// While recording, each second of video is written to this device's storage (IndexedDB) instead of being
+// kept in memory, so long sessions don't fill the phone's RAM and what was recorded survives a reload.
+// Recordings split into 5-minute parts automatically. Bitrate 2.5 Mbps ≈ 19 MB per minute.
 const comp = document.createElement("canvas"), cctx = comp.getContext("2d");
 let recorder = null, recAnnotated = true, recStartAt = 0, recTimer = 0, recordings = [], phaseColor = "#888";
+let recGroup = null, recSeg = null, SEG_SEC = 300;
+const REC_BPS = 2.5e6;
 function pickMime(){
   const c = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
   return c.find(m => MediaRecorder.isTypeSupported(m)) || "";
+}
+
+// --- small IndexedDB store: "recs" (one row per recording part) and "chunks" (1-second pieces) ---
+let idbP = null, idbOK = true;
+const reqP = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+function idb(){
+  if (!idbP) idbP = new Promise((res, rej) => {
+    let q; try { q = indexedDB.open("ballet-rec", 1); } catch(e){ rej(e); return; }
+    q.onupgradeneeded = () => { const db = q.result; db.createObjectStore("recs", { keyPath: "id" }); db.createObjectStore("chunks", { autoIncrement: true }).createIndex("rec", "rec"); };
+    q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error);
+  });
+  return idbP;
+}
+const idbPut = async (store, v) => reqP((await idb()).transaction(store, "readwrite").objectStore(store).put(v));
+const idbAdd = async (store, v) => reqP((await idb()).transaction(store, "readwrite").objectStore(store).add(v));
+const idbAll = async store => reqP((await idb()).transaction(store).objectStore(store).getAll());
+const idbChunks = async id => reqP((await idb()).transaction("chunks").objectStore("chunks").index("rec").getAll(id));
+async function idbRemove(id){
+  const tr = (await idb()).transaction(["recs", "chunks"], "readwrite");
+  tr.objectStore("recs").delete(id);
+  const cur = tr.objectStore("chunks").index("rec").openKeyCursor(IDBKeyRange.only(id));
+  cur.onsuccess = () => { const c = cur.result; if (c){ tr.objectStore("chunks").delete(c.primaryKey); c.continue(); } };
+  return new Promise((res, rej) => { tr.oncomplete = res; tr.onerror = () => rej(tr.error); });
+}
+const recMeta = m => { const { blob, ...rest } = m; return rest; };      // what gets stored (no in-memory blob)
+
+function recFileName(g, part, multi, type){
+  return `${mod}-${g.stamp}${g.annotated ? "-overlay" : ""}${multi ? "-part" + part : ""}.${type.includes("mp4") ? "mp4" : "webm"}`;
 }
 function startRec(){
   if (!window.MediaRecorder){ setStatus("recUnsupported"); return; }
@@ -1272,29 +1337,74 @@ function startRec(){
   let src;
   if (recAnnotated){ comp.width = video.videoWidth; comp.height = video.videoHeight; drawComposite(); src = comp.captureStream(30); }
   else src = stream;
-  const mime = pickMime();
+  const d = new Date();
+  recGroup = { src, mime: pickMime(), annotated: recAnnotated, part: 0, doneBytes: 0,
+               stamp: `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}` };
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  recStartAt = performance.now();
+  if (!startSegment()) { recGroup = null; return; }
+  clearInterval(recTimer); recTimer = setInterval(recTick, 500);
+  updateRecUI();
+}
+function startSegment(){
+  const g = recGroup;
   let r;
-  try { r = new MediaRecorder(src, mime ? { mimeType: mime, videoBitsPerSecond: 5e6 } : undefined); }
-  catch(e){ setStatus("recFail", e.message || String(e)); return; }
-  const chunks = [], annotated = recAnnotated, started = performance.now();
-  r.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-  r.onstop = () => {
-    const type = (r.mimeType || mime || "video/webm").split(";")[0];
-    const blob = new Blob(chunks, { type });
-    if (blob.size){ addRecording(blob, (performance.now() - started) / 1000, annotated); setStatus("recDone"); }
+  // a keyframe every second makes MP4 recorders hand over data each second instead of holding it all until stop,
+  // which is what lets an interrupted recording be recovered (browsers that don't know the option ignore it)
+  const opts = { videoBitsPerSecond: REC_BPS, videoKeyFrameIntervalDuration: 1000 };
+  if (g.mime) opts.mimeType = g.mime;
+  try { r = new MediaRecorder(g.src, opts); }
+  catch(e){ setStatus("recFail", e.message || String(e)); return false; }
+  g.part++;
+  const type = (r.mimeType || g.mime || "video/webm").split(";")[0];
+  const seg = { g, part: g.part, bytes: 0, started: performance.now(), mem: [], useIdb: idbOK, write: Promise.resolve(),
+                meta: { id: uuid(), name: "", type, dur: 0, annotated: g.annotated, created: Date.now(), size: 0, saved: false, done: false, part: g.part } };
+  const toMemory = () => { if (seg.useIdb){ seg.useIdb = false; idbOK = false; setStatus("recMemOnly"); } };
+  if (seg.useIdb) seg.write = seg.write.then(() => idbPut("recs", recMeta(seg.meta))).catch(toMemory);   // so a crash can be recovered
+  r.ondataavailable = e => {
+    if (!e.data || !e.data.size) return;
+    seg.bytes += e.data.size;
+    const piece = e.data;
+    seg.write = seg.write.then(async () => {
+      if (seg.useIdb){ try { await idbAdd("chunks", { rec: seg.meta.id, data: await piece.arrayBuffer() }); return; } catch { toMemory(); } }
+      seg.mem.push(piece);
+    });
   };
+  r.onstop = () => finishSegment(seg);
   r.start(1000);
-  recorder = r; recStartAt = started;
-  clearInterval(recTimer); recTimer = setInterval(updateRecUI, 500);
+  recorder = r; recSeg = seg;
+  return true;
+}
+async function finishSegment(seg){
+  const g = seg.g;
+  seg.meta.dur = (performance.now() - seg.started) / 1000;
+  seg.meta.size = seg.bytes; seg.meta.done = true;
+  seg.meta.name = recFileName(g, seg.part, g.part > 1, seg.meta.type);
+  g.doneBytes += seg.bytes;
+  await seg.write;
+  if (seg.mem.length) seg.meta.blob = new Blob(seg.mem, { type: seg.meta.type });
+  if (seg.useIdb && !seg.mem.length) await idbPut("recs", recMeta(seg.meta)).catch(() => {});
+  if (!seg.bytes){ if (seg.useIdb) idbRemove(seg.meta.id).catch(() => {}); return; }
+  recordings = [seg.meta, ...recordings.filter(x => x.id !== seg.meta.id)];
+  renderRecs(); setStatus("recDone");
+  if (cfg.autoDl) saveRecording(seg.meta);
+}
+// every 0.5 s: update the REC badge and roll over to a new part at 5 minutes
+function recTick(){
+  if (recorder && recSeg && performance.now() - recSeg.started >= SEG_SEC * 1000){
+    const old = recorder;
+    if (startSegment()) old.stop();                 // start the next part first so almost nothing is missed
+  }
   updateRecUI();
 }
 function stopRec(){
   if (recorder && recorder.state !== "inactive") recorder.stop();
-  recorder = null; clearInterval(recTimer); updateRecUI();
+  recorder = null; recGroup = null; recSeg = null; clearInterval(recTimer); updateRecUI();
 }
 $("recBtn").addEventListener("click", () => recorder ? stopRec() : startRec());
 
 const mmss = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+const mb = n => (n / 1048576).toFixed(n < 10485760 ? 1 : 0);
 function updateRecUI(){
   const b = $("recBtn");
   b.textContent = t(recorder ? "recStop" : "recStart");
@@ -1302,7 +1412,10 @@ function updateRecUI(){
   b.disabled = !running && !recorder;
   $("recMode").disabled = !!recorder;
   $("recChip").hidden = !recorder;
-  if (recorder) $("recChip").querySelector("span").textContent = "REC " + mmss((performance.now() - recStartAt) / 1000);
+  if (recorder && recGroup){
+    const total = recGroup.doneBytes + (recSeg ? recSeg.bytes : 0);
+    $("recChip").querySelector("span").textContent = `REC ${mmss((performance.now() - recStartAt) / 1000)} · ${mb(total)} MB` + (recGroup.part > 1 ? ` · ${t("recPart", recGroup.part)}` : "");
+  }
 }
 
 function drawComposite(){
@@ -1332,38 +1445,6 @@ function drawComposite(){
     y += bh + pad / 2;
   }
 }
-
-function addRecording(blob, dur, annotated){
-  const d = new Date();
-  const p2 = n => String(n).padStart(2, "0");
-  const stamp = `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}`;
-  const ext = blob.type.includes("mp4") ? "mp4" : "webm";
-  recordings.unshift({ blob, url: URL.createObjectURL(blob), dur, annotated, when: `${p2(d.getHours())}:${p2(d.getMinutes())}`,
-                       name: `tendu-${stamp}${annotated ? "-overlay" : ""}.${ext}`, saved: false });
-  renderRecs();
-}
-function renderRecs(){
-  const ul = $("recs"); ul.innerHTML = "";
-  if (!recordings.length){ const li = document.createElement("li"); li.className = "empty"; li.textContent = t("recsEmpty"); ul.appendChild(li); return; }
-  for (const r of recordings){
-    const li = document.createElement("li");
-    const info = document.createElement("div"); info.className = "info";
-    info.textContent = `${r.when} · ${mmss(r.dur)} · ${(r.blob.size / 1048576).toFixed(1)} MB`;
-    const sm = document.createElement("small");
-    sm.textContent = t(r.annotated ? "tagAnnotated" : "tagRaw") + " · " + r.name.split(".").pop().toUpperCase() + (r.saved ? " · " + t("recSaved") : "");
-    info.appendChild(sm);
-    const mk = (key, fn) => { const b = document.createElement("button"); b.textContent = t(key); b.addEventListener("click", fn); return b; };
-    li.append(info,
-      mk("recAnalyze", () => startFile(r.blob)),
-      mk("recSave", () => { const a = document.createElement("a"); a.href = r.url; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); r.saved = true; renderRecs(); }),
-      mk("recDelete", () => { if (recorder) return; URL.revokeObjectURL(r.url); recordings = recordings.filter(x => x !== r); renderRecs(); }));
-    ul.appendChild(li);
-  }
-}
-window.addEventListener("beforeunload", e => {
-  saveHistory();
-  if (recorder || recordings.some(r => !r.saved) || cloud.queue.length){ e.preventDefault(); e.returnValue = t("leaveWarn"); }
-});
 
 // ---------- geometry ----------
 const W = () => canvas.width, H = () => canvas.height;
@@ -3039,6 +3120,71 @@ $("dReport").addEventListener("click", async () => {
   document.body.classList.add("show-report"); window.scrollTo(0, 0);
   $("rpBack").addEventListener("click", () => document.body.classList.remove("show-report"));
   $("rpPrint").addEventListener("click", () => window.print());
+});
+
+// --- the recordings list (kept on this device across reloads) ---
+async function recBlob(m){
+  if (m.blob) return m.blob;
+  const parts = await idbChunks(m.id);
+  return new Blob(parts.map(c => c.data), { type: m.type });
+}
+async function saveRecording(m){
+  const blob = await recBlob(m), url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = m.name || `recording.${m.type.includes("mp4") ? "mp4" : "webm"}`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  m.saved = true;
+  if (!m.blob) idbPut("recs", recMeta(m)).catch(() => {});
+  renderRecs();
+}
+async function loadRecordings(){
+  try {
+    const metas = await idbAll("recs");
+    for (const m of metas.filter(x => !x.done)){            // a part interrupted by a reload or crash: recover what was written
+      const parts = await idbChunks(m.id);
+      if (!parts.length){ idbRemove(m.id).catch(() => {}); continue; }
+      m.size = parts.reduce((s, c) => s + c.data.byteLength, 0); m.dur = m.dur || parts.length;   // ~1 s per piece
+      m.done = true; m.recovered = true;
+      m.name = m.name || `${mod}-recovered-${new Date(m.created).toISOString().slice(0, 19).replace(/[-:T]/g, "")}.${m.type.includes("mp4") ? "mp4" : "webm"}`;
+      await idbPut("recs", m);
+    }
+    recordings = metas.filter(x => x.done && x.size).sort((a, b) => b.created - a.created);
+  } catch { idbOK = false; }
+  renderRecs();
+}
+function renderRecs(){
+  const ul = $("recs"); ul.innerHTML = "";
+  if (!recordings.length){ const li = document.createElement("li"); li.className = "empty"; li.textContent = t("recsEmpty"); ul.appendChild(li); }
+  for (const r of recordings){
+    const li = document.createElement("li");
+    const info = document.createElement("div"); info.className = "info";
+    const d = new Date(r.created), when = (ymd(d) === todayStr() ? "" : fShort(d) + " ") + `${p2(d.getHours())}:${p2(d.getMinutes())}`;
+    info.textContent = `${when} · ${r.dur ? mmss(r.dur) : "—"} · ${mb(r.size)} MB`;
+    const sm = document.createElement("small");
+    sm.textContent = [t(r.annotated ? "tagAnnotated" : "tagRaw"), r.part > 1 || /-part\d/.test(r.name) ? t("recPart", r.part) : null,
+                      r.type.includes("mp4") ? "MP4" : "WEBM", r.recovered ? t("recRecovered") : null, r.saved ? t("recSaved") : null].filter(Boolean).join(" · ");
+    info.appendChild(sm);
+    const mk = (key, fn) => { const b = document.createElement("button"); b.textContent = t(key); b.addEventListener("click", fn); return b; };
+    li.append(info,
+      mk("recAnalyze", async () => startFile(await recBlob(r))),
+      mk("recSave", () => saveRecording(r)),
+      mk("recDelete", async () => {
+        if (recorder && recSeg && recSeg.meta.id === r.id) return;
+        if (!confirm(t("recConfirmDelete"))) return;
+        if (!r.blob) await idbRemove(r.id).catch(() => {});
+        recordings = recordings.filter(x => x !== r); renderRecs();
+      }));
+    ul.appendChild(li);
+  }
+  const total = recordings.reduce((s, r) => s + (r.size || 0), 0);
+  $("recStore").textContent = recordings.length ? t(idbOK ? "recStoreNote" : "recMemOnly", mb(total)) : "";
+}
+$("recAutoDl").addEventListener("change", e => { cfg.autoDl = e.target.checked; lsSet("ballet-autodl", e.target.checked ? "1" : ""); });
+cfg.autoDl = !!lsGet("ballet-autodl"); $("recAutoDl").checked = cfg.autoDl;
+loadRecordings();
+window.addEventListener("beforeunload", e => {
+  saveHistory();
+  if (recorder || recordings.some(r => r.blob && !r.saved) || cloud.queue.length){ e.preventDefault(); e.returnValue = t("leaveWarn"); }
 });
 
 // ---------- sound ----------
