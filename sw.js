@@ -3,11 +3,11 @@
 // Pose model and libraries from the CDN: cache first (their URLs are versioned).
 // Supabase traffic is never cached.
 // When you change any app file, bump VERSION so phones pick up the new version.
-const VERSION = "bac-v7";
+const VERSION = "bac-v8";
 const SHELL = ["./", "./index.html", "./config.js", "./manifest.webmanifest",
                "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 const CDN_HOSTS = ["cdn.jsdelivr.net", "storage.googleapis.com"];
-
+ 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });

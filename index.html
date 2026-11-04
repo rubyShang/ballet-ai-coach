@@ -91,6 +91,10 @@ details summary{cursor:pointer;font-weight:600}
 .tips{font-size:13px;color:var(--muted);margin:0;padding-left:18px}
 .tips li{margin:3px 0}
 .empty{color:var(--muted);font-size:13px}
+.frame-guide{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;max-width:min(86%,520px);
+  background:rgba(255,255,255,.94);color:var(--fg);border-radius:20px;padding:14px 20px;text-align:center;
+  font-family:var(--display);font-weight:600;font-size:clamp(16px,2.6vw,24px);line-height:1.35;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.frame-guide small{display:block;font-family:var(--font);font-weight:400;font-size:14px;color:var(--muted);margin-top:4px}
 .rec-chip{position:absolute;right:10px;top:10px;z-index:2}
 .rec-chip i{animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{opacity:.2}}
@@ -363,6 +367,7 @@ body.show-report #report{display:block}
         <div class="chip" id="phaseChip"><i></i><span>—</span><small></small></div>
         <div class="chip" id="dirChip"><span>—</span></div>
       </div>
+      <div class="frame-guide" id="frameGuide" hidden></div>
       <div class="chip rec-chip" id="recChip" hidden><i style="--c:#ff3b3b"></i><span></span></div>
     </div>
     <div class="controls">
@@ -503,6 +508,8 @@ body.show-report #report{display:block}
           <input type="range" id="demiH" min="0.05" max="0.4" step="0.01" value="0.15"></div>
         <div class="slider"><label for="pointH" data-i="sPointH"></label><output id="pointHOut"></output>
           <input type="range" id="pointH" min="0.25" max="0.9" step="0.01" value="0.5"></div>
+        <div class="slider"><label for="pointAngle" data-i="sPointAngle"></label><output id="pointAngleOut"></output>
+          <input type="range" id="pointAngle" min="120" max="175" step="1" value="150"></div>
 
         <p class="group" data-i="grpSeq"></p>
         <div class="slider"><label for="liftMin" data-i="sLiftMin"></label><output id="liftMinOut"></output>
@@ -534,6 +541,8 @@ body.show-report #report{display:block}
             <option value="full" data-i="optFull"></option>
           </select></div>
         <div class="slider"><label><input type="checkbox" id="voice" checked> <span data-i="voiceLabel"></span></label></div>
+        <div class="slider"><label><input type="checkbox" id="sound" checked> <span data-i="soundLabel"></span></label></div>
+        <div class="slider"><label><input type="checkbox" id="angle3d" checked> <span data-i="angle3dLabel"></span></label></div>
       </details>
     </div>
 
@@ -648,6 +657,17 @@ const I18N = {
     recUnsupported:"这个浏览器不支持录制，请用电脑版 Chrome 或 Edge。", recFail:m=>"无法录制：" + m,
     recDone:"录好了，在右边「录像」里可以保存或重新分析。",
     leaveWarn:"还有没保存的录像或没上传完的数据，关掉页面会丢失。",
+    fgNobody:"没看到人", fgNobodyHint:"请站到镜头前，全身入镜",
+    fgFeet:"脚没有拍到", fgFeetHint:"请把镜头往下移，或者站远一点",
+    fgHead:"头没有拍到", fgHeadHint:"请把镜头往上移，或者站远一点",
+    fgSmall:"人太小了", fgSmallHint:"请靠近一点，让身体占画面一半以上",
+    fgCenter:"请站到画面中间", fgCenterHint:"左右都留一点空间，擦地时脚才不会出画面",
+    fgPlieFront:"Plié 请从正面拍", fgPlieFrontHint:"面对镜头站，才能看到膝盖有没有对准脚尖",
+    fgTenduSide:"这个方向请从侧面拍", fgTenduSideHint:"侧身对着镜头，才看得清脚往前、往后的轨迹",
+    fgTenduFront:"à la seconde 请从正面拍", fgTenduFrontHint:"面对镜头站，才看得清脚往旁边擦出",
+    soundLabel:"音效提示（全对“叮咚”，有错低音）", angle3dLabel:"用 3D 坐标计算关节角度（推荐）",
+    sPointAngle:"全绷：脚背角度至少（膝-踝-脚尖）",
+    instepBent:d=>`脚背没完全绷直（${d}°）`, pointedDeg:d=>`全绷（脚背 ${d}°）`,
     mod_tendu:"Tendu 擦地", mod_plie:"Plié 蹲",
     pos_first:"一位", pos_second:"二位", both:"双腿", posInfo:(p,a)=>"脚位：" + p + (a ? "（自动）" : ""),
     pp_stand:"直立", pp_down:"下蹲", pp_bottom:"最低点", pp_up:"上升", lgGuide:"膝盖→脚尖参考线",
@@ -807,6 +827,17 @@ const I18N = {
     recUnsupported:"This browser can't record. Use Chrome or Edge on a computer.", recFail:m=>"Couldn't record: " + m,
     recDone:"Recording finished. Save it or analyze it again under Recordings.",
     leaveWarn:"You have unsaved recordings or data still uploading that will be lost.",
+    fgNobody:"No one in view", fgNobodyHint:"Stand in front of the camera with your whole body in the picture",
+    fgFeet:"Feet aren't in the picture", fgFeetHint:"Tilt the camera down or step back a little",
+    fgHead:"Head isn't in the picture", fgHeadHint:"Tilt the camera up or step back a little",
+    fgSmall:"You look too small", fgSmallHint:"Come closer so your body fills at least half the picture",
+    fgCenter:"Move to the middle", fgCenterHint:"Leave room on both sides so the foot stays in the picture",
+    fgPlieFront:"Film plié from the front", fgPlieFrontHint:"Face the camera so it can see the knees over the toes",
+    fgTenduSide:"Film this direction from the side", fgTenduSideHint:"Turn sideways so the camera sees the foot go forward and back",
+    fgTenduFront:"Film à la seconde from the front", fgTenduFrontHint:"Face the camera so it sees the foot brush to the side",
+    soundLabel:"Sound cues (chime when all correct, low tone otherwise)", angle3dLabel:"Use 3D coordinates for joint angles (recommended)",
+    sPointAngle:"Full point: instep angle at least (knee–ankle–toe)",
+    instepBent:d=>`Instep not fully stretched (${d}°)`, pointedDeg:d=>`Pointed (instep ${d}°)`,
     mod_tendu:"Tendu", mod_plie:"Plié",
     pos_first:"1st position", pos_second:"2nd position", both:"Both legs", posInfo:(p,a)=>"Position: " + p + (a ? " (auto)" : ""),
     pp_stand:"Standing", pp_down:"Going down", pp_bottom:"Bottom", pp_up:"Coming up", lgGuide:"Knee → toe guide",
@@ -951,13 +982,13 @@ const SL = {
   liftMin:[v=>v/100, v=>v+"%"], liftMax:[v=>v/100, v=>v+"%"], heelDownMin:[v=>v/100, v=>v+"%"], demiMin:[v=>v/100, v=>v+"%"],
   kneeMin:[v=>v, v=>v+"°"], hipMax:[v=>v, v=>v+"°"], toeMax:[v=>v/100, v=>v+"%"], pathMax:[v=>v/100, v=>v+"%"],
   closeMax:[v=>v, v=>v.toFixed(1)],
-  pDemiMin:[v=>v, v=>v+"°"], grandMin:[v=>v, v=>v+"°"], kneeTrackMin:[v=>v/100, v=>v+"%"], tiltMax:[v=>v, v=>v+"°"], evenMax:[v=>v, v=>v+"°"],
+  pointAngle:[v=>v, v=>v+"°"], pDemiMin:[v=>v, v=>v+"°"], grandMin:[v=>v, v=>v+"°"], kneeTrackMin:[v=>v/100, v=>v+"%"], tiltMax:[v=>v, v=>v+"°"], evenMax:[v=>v, v=>v+"°"],
 };
 function readCfg(){
   for (const [id, [conv, show]] of Object.entries(SL)){ const v = +$(id).value; cfg[id] = conv(v); $(id + "Out").textContent = show(v); }
-  cfg.leg = $("leg").value; cfg.dir = $("dir").value; cfg.voice = $("voice").checked; cfg.pPos = $("pPos").value;
+  cfg.leg = $("leg").value; cfg.dir = $("dir").value; cfg.voice = $("voice").checked; cfg.pPos = $("pPos").value; cfg.sound = $("sound").checked; cfg.angle3d = $("angle3d").checked;
 }
-[...Object.keys(SL), "leg", "dir", "voice", "pPos"].forEach(id => $(id).addEventListener("input", readCfg));
+[...Object.keys(SL), "leg", "dir", "voice", "pPos", "sound", "angle3d"].forEach(id => $(id).addEventListener("input", readCfg));
 readCfg();
 $("speed").addEventListener("change", () => { if (mode === "file") video.playbackRate = +$("speed").value; });
 
@@ -979,7 +1010,13 @@ function labelLists(){
   const P = mod === "plie";
   $("axS").textContent = t("axStart"); $("axF").textContent = t(P ? "axBottom" : "axFar"); $("axC").textContent = t(P ? "axUp" : "axClose");
 }
-function setRow(els, key, m){ const [s, val] = fmt(m); const li = els[key]; li.dataset.s = s; li.querySelector(".val").textContent = val; }
+// touch the DOM only when a row's state or text actually changes (this runs every video frame)
+function setRow(els, key, m){
+  const [s, val] = fmt(m), li = els[key];
+  if (li._s === s && li._v === val) return;
+  li._s = s; li._v = val; li.dataset.s = s; li.querySelector(".val").textContent = val;
+}
+function setText(el, txt){ if (el._t !== txt){ el._t = txt; el.textContent = txt; } }
 
 // ---------- language switch ----------
 function applyLang(){
@@ -1055,6 +1092,7 @@ function stop(){
   if (stream){ stream.getTracks().forEach(tr => tr.stop()); stream = null; }
   video.pause(); $("stopBtn").disabled = true;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  $("frameGuide").hidden = true; frameShown = null;
 }
 $("camBtn").addEventListener("click", startCamera);
 $("fileInput").addEventListener("change", e => { const f = e.target.files[0]; if (f) startFile(f); e.target.value = ""; });
@@ -1201,11 +1239,54 @@ const legLean = (hip, ankle) => Math.abs(Math.atan2(ankle.x - hip.x, ankle.y - h
 const ema = {};
 const smooth = (k, v, a = 0.45) => (ema[k] = ema[k] == null ? v : ema[k] * (1 - a) + v * a);
 const pct = e => Math.round(e * 100) + "%";
+// Joint angle at b (a–b–c). With "3D angles" on, MediaPipe's world landmarks (metres) are used, so the angle
+// doesn't change when the camera sees the leg at a slant; otherwise the on-screen 2D points are used.
+function jointAngle(lm, wlm, a, b, c){
+  if (cfg.angle3d && wlm){
+    const A = wlm[a], B = wlm[b], C = wlm[c];
+    const v1 = [A.x - B.x, A.y - B.y, A.z - B.z], v2 = [C.x - B.x, C.y - B.y, C.z - B.z];
+    const d = (v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]) / (Math.hypot(...v1) * Math.hypot(...v2) || 1);
+    return Math.acos(Math.max(-1, Math.min(1, d))) * 180 / Math.PI;
+  }
+  return angle(pt(lm, a), pt(lm, b), pt(lm, c));
+}
 
 // ---------- per-frame analysis ----------
 let workSide = "right", view = "front", facing = 0, lastLeg = null, lastRep = null, lastDir;
 const VIS = 0.5;
-function analyze(lm, wlm){ return mod === "plie" ? analyzePlie(lm, wlm) : analyzeTendu(lm, wlm); }
+function analyze(lm, wlm){ checkFraming(lm); return mod === "plie" ? analyzePlie(lm, wlm) : analyzeTendu(lm, wlm); }
+
+// ---------- framing assistant (camera only) ----------
+// Checks every frame where the dancer is in the picture; a hint shows only after the same problem has
+// lasted ~0.8 s and clears after ~0.5 s of good framing, so it doesn't flicker.
+let frameIssue = null, frameSince = 0, frameShown = null, frameOkSince = 0;
+function framingProblem(lm){
+  if (!lm) return "fgNobody";
+  const vis = i => (lm[i].visibility ?? 1) >= 0.35;
+  const inFrame = i => vis(i) && lm[i].y <= 0.985 && lm[i].y >= 0.01 && lm[i].x >= 0.01 && lm[i].x <= 0.99;
+  const feet = [27, 28, 29, 30, 31, 32];
+  if (feet.filter(inFrame).length < 4) return "fgFeet";
+  if (!inFrame(0)) return "fgHead";
+  const top = lm[0].y, bottom = Math.max(...feet.map(i => lm[i].y));
+  if (bottom - top < 0.4) return "fgSmall";
+  const cx = (lm[23].x + lm[24].x) / 2;
+  if (cx < 0.15 || cx > 0.85) return "fgCenter";
+  if (mod === "plie" && view === "side") return "fgPlieFront";
+  if (mod === "tendu"){
+    if ((cfg.dir === "devant" || cfg.dir === "derriere") && view === "front") return "fgTenduSide";
+    if (cfg.dir === "seconde" && view === "side") return "fgTenduFront";
+  }
+  return null;
+}
+function checkFraming(lm){
+  const box = $("frameGuide");
+  if (mode !== "cam"){ if (!box.hidden) box.hidden = true; frameShown = null; return; }
+  const now = performance.now(), issue = framingProblem(lm);
+  if (issue !== frameIssue){ frameIssue = issue; frameSince = now; }
+  if (issue && now - frameSince > 800 && frameShown !== issue){
+    frameShown = issue; box.innerHTML = `${esc(t(issue))}<small>${esc(t(issue + "Hint"))}</small>`; box.hidden = false;
+  } else if (!issue && frameShown && now - frameSince > 500){ frameShown = null; box.hidden = true; }
+}
 function analyzeTendu(lm, wlm){
   ctx.clearRect(0, 0, W(), H());
   if (!lm){ LIVE.forEach(k => setRow(liveEls, k, ["na", "noPerson"])); setPhaseChip(null); return; }
@@ -1229,7 +1310,7 @@ function analyzeTendu(lm, wlm){
   const work = workSide === "left" ? L : R, sup = workSide === "left" ? R : L;
   const workLean = workSide === "left" ? leanL : leanR;
   lastLeg = workSide;
-  $("legInfo").textContent = t("legInfo", t(workSide), cfg.leg === "auto");
+  setText($("legInfo"), t("legInfo", t(workSide), cfg.leg === "auto"));
 
   const legLen = dist(sup.hip, sup.ankle) || 1;
   const footRef = 0.27 * legLen;               // a foot is roughly 27% of hip-to-ankle length
@@ -1237,9 +1318,10 @@ function analyzeTendu(lm, wlm){
   const out = {};
 
   // knees
-  for (const [key, leg] of [["workKnee", work], ["supportKnee", sup]]){
+  const otherSide = workSide === "left" ? "right" : "left";
+  for (const [key, leg, idx] of [["workKnee", work, LEGS[workSide]], ["supportKnee", sup, LEGS[otherSide]]]){
     if (Math.min(leg.hip.v, leg.knee.v, leg.ankle.v) < VIS){ out[key] = ["na", "unclear"]; continue; }
-    const a = smooth(key, angle(leg.hip, leg.knee, leg.ankle));
+    const a = smooth(key, jointAngle(lm, wlm, idx.hip, idx.knee, idx.ankle));
     out[key] = [a >= cfg.kneeMin ? "ok" : "bad", "deg", Math.round(a) + "°"];
   }
   // hips level (front view only)
@@ -1262,7 +1344,10 @@ function analyzeTendu(lm, wlm){
   else out.toe = ph === -1 ? ["bad", "lifted", pct(toeLift)] : ["ok", "onFloor"];
   setPhaseChip(ph, heelH == null ? "" : t("heel", heelH.toFixed(2)));
 
-  trackRep({ t: video.currentTime, lean: workLean, ph, toe: { x: work.toe.x, y: work.toe.y }, toeVis: work.toe.v }, out, work, sup, legLen, footRef);
+  // instep: knee–ankle–toe angle of the working foot (≈180° when the foot is fully stretched)
+  const wi = LEGS[workSide];
+  const ankA = Math.min(work.knee.v, work.ankle.v, work.toe.v) >= VIS ? smooth("ankA", jointAngle(lm, wlm, wi.knee, wi.ankle, wi.toe)) : null;
+  trackRep({ t: video.currentTime, lean: workLean, ph, ankA, toe: { x: work.toe.x, y: work.toe.y }, toeVis: work.toe.v }, out, work, sup, legLen, footRef);
 
   for (const k of LIVE) setRow(liveEls, k, out[k]);
   draw(lm, work, sup, out);
@@ -1273,16 +1358,18 @@ function analyzeTendu(lm, wlm){
 
 function setPhaseChip(ph, extra){
   const chip = $("phaseChip");
-  if (ph === null){ chip.style.setProperty("--c", "#888"); chip.querySelector("span").textContent = t("chipUnknown"); chip.querySelector("small").textContent = ""; return; }
+  if (ph === null){ if (chip._ph !== null){ chip._ph = null; chip.style.setProperty("--c", "#888"); } setText(chip.querySelector("span"), t("chipUnknown")); setText(chip.querySelector("small"), ""); return; }
   const [key, tok] = PHASES[ph];
-  chip.style.setProperty("--c", `var(${tok})`);
+  if (chip._ph !== ph){ chip._ph = ph; chip.style.setProperty("--c", `var(${tok})`); }
   phaseColor = css(tok);
-  chip.querySelector("span").textContent = t(key);
-  chip.querySelector("small").textContent = extra || "";
+  setText(chip.querySelector("span"), t(key));
+  setText(chip.querySelector("small"), extra || "");
 }
 
 // ---------- drawing ----------
-const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// colour tokens never change at runtime (single light theme), so read each one once
+const cssCache = {};
+const css = n => cssCache[n] ?? (cssCache[n] = getComputedStyle(document.documentElement).getPropertyValue(n).trim());
 function draw(lm, work, sup, out){
   const col = s => s === "ok" ? css("--ok") : s === "bad" ? css("--bad") : "rgba(255,255,255,.75)";
   const lw = Math.max(3, W() / 220);
@@ -1408,7 +1495,12 @@ function judgeRep(S, closedNormally, work, sup, legLen, footRef){
 
   // fully pointed at the far end
   const far = V.filter(s => s.e >= 0.9);
-  R.point = frac(far, 2) >= 0.5 ? ["ok", "pointed"] : ["bad", frac(far, 1) >= frac(far, 0) ? "onlyDemi" : "heelNotUp"];
+  // pointed = heel high enough AND the instep stretched (median knee–ankle–toe angle at the far end)
+  const angs = far.map(s => s.ankA).filter(a => a != null).sort((a, b) => a - b);
+  const ankMed = angs.length ? angs[Math.floor(angs.length / 2)] : null;
+  if (frac(far, 2) < 0.5) R.point = ["bad", frac(far, 1) >= frac(far, 0) ? "onlyDemi" : "heelNotUp"];
+  else if (ankMed != null && ankMed < cfg.pointAngle) R.point = ["bad", "instepBent", Math.round(ankMed)];
+  else R.point = ["ok", ankMed != null ? "pointedDeg" : "pointed", ankMed != null ? Math.round(ankMed) : undefined];
 
   // back: point -> demi -> flat
   const bD = frac(B, 1), bDi = idx(B, 1), bFi = idx(B, 0);
@@ -1463,7 +1555,7 @@ function finishRep(work, sup, legLen, footRef, closedNormally){
   renderReps();
   $("dirChip").querySelector("span").textContent = dirLabel(res.dir);
   const firstBad = REP.find(k => res.R[k][0] === "bad");
-  if (firstBad) say(t("c_" + firstBad), true);
+  announceResult(!rec.errors.length, firstBad ? "c_" + firstBad : null);
 }
 
 // consecutive frames in the same phase -> [{ph, w}] with w = share of the rep
@@ -2280,8 +2372,8 @@ function analyzePlie(lm, wlm){
   const torso = dist(shMid, hipMid) || 1;
   view = smooth("shw", dist(ls, rs) / torso) > 0.45 ? "front" : "side";
   const ok = (...ps) => Math.min(...ps.map(p => p.v)) >= VIS;
-  const bendOf = (Lg, key) => ok(Lg.hip, Lg.knee, Lg.ankle) ? Math.max(0, 180 - smooth(key, angle(Lg.hip, Lg.knee, Lg.ankle))) : null;
-  const bendL = bendOf(L, "pAL"), bendR = bendOf(R, "pAR");
+  const bendOf = (Lg, idx, key) => ok(Lg.hip, Lg.knee, Lg.ankle) ? Math.max(0, 180 - smooth(key, jointAngle(lm, wlm, idx.hip, idx.knee, idx.ankle))) : null;
+  const bendL = bendOf(L, LEGS.left, "pAL"), bendR = bendOf(R, LEGS.right, "pAR");
   const bend = bendL != null && bendR != null ? (bendL + bendR) / 2 : (bendL ?? bendR);
   const segLen = ((dist(L.hip, L.knee) + dist(L.knee, L.ankle)) + (dist(R.hip, R.knee) + dist(R.knee, R.ankle))) / 2 || 1;
   const footRef = 0.27 * segLen;
@@ -2296,7 +2388,7 @@ function analyzePlie(lm, wlm){
     const gap = smooth("pGap", Math.abs(L.ankle.x - R.ankle.x) / segLen);
     pliePos = cfg.pPos !== "auto" ? cfg.pPos : gap > 0.24 ? "second" : "first";
   } else if (cfg.pPos !== "auto") pliePos = cfg.pPos;
-  $("legInfo").textContent = t("posInfo", t("pos_" + pliePos), cfg.pPos === "auto");
+  setText($("legInfo"), t("posInfo", t("pos_" + pliePos), cfg.pPos === "auto"));
 
   const out = {};
   // knees over toes
@@ -2450,7 +2542,7 @@ function finishPlie(){
   renderReps();
   $("dirChip").querySelector("span").textContent = dirLabel(res.dir);
   const firstBad = REP.find(k => res.R[k][0] === "bad");
-  if (firstBad) say(t("c_" + firstBad), true);
+  announceResult(!rec.errors.length, firstBad ? "c_" + firstBad : null);
 }
 
 // ---------- plié: drawings for the Learn page (front view) ----------
@@ -2544,6 +2636,39 @@ function setView(view){
 }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 $("goPractice").addEventListener("click", () => setView("practice"));
+
+// ---------- sound ----------
+// Short synthesized tones carry across a room better than speech. The audio context is unlocked by the
+// Start camera / Upload video tap (browsers only allow sound after a user gesture).
+let audioCtx = null;
+function unlockAudio(){
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  } catch {}
+}
+function tone(freq, start, dur, type = "sine", vol = 0.35){
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.exponentialRampToValueAtTime(vol, start + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  o.connect(g).connect(audioCtx.destination); o.start(start); o.stop(start + dur + 0.05);
+}
+// returns true if a sound was played, so speech can wait for it
+function playResult(allCorrect){
+  if (!cfg.sound || !audioCtx || audioCtx.state !== "running") return false;
+  const now = audioCtx.currentTime;
+  if (allCorrect){ tone(1318.5, now, 0.35); tone(1760, now + 0.12, 0.5); }          // E6 → A6 "ding-dong"
+  else { tone(262, now, 0.22, "triangle", 0.4); tone(196, now + 0.18, 0.3, "triangle", 0.4); }   // C4 → G3
+  return true;
+}
+function announceResult(allCorrect, cueKey){
+  const played = playResult(allCorrect);
+  if (cueKey) setTimeout(() => say(t(cueKey), true), played ? 600 : 0);
+}
+$("camBtn").addEventListener("click", unlockAudio);
+$("fileInput").addEventListener("click", unlockAudio);
 
 // ---------- voice ----------
 const badSince = {}, lastSpoke = {}; let lastAny = 0;
