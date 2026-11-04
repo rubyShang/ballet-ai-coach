@@ -179,7 +179,8 @@ header .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--a
 .step svg{width:100%;height:auto;display:block}
 .step .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:13px;margin-top:2px}
 .step p{margin:6px 0 0;font-size:13px}
-.mistakes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.mistakes{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:12px}
+@media (max-width:760px){.mistakes{grid-template-columns:1fr}}
 .mistake{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .mistake figure{margin:0;text-align:center}
 .mistake svg{width:100%;height:auto;display:block}
@@ -316,7 +317,7 @@ body.show-report #report{display:block}
 <section id="gate">
   <div class="gate-card">
     <div class="lang" role="group" aria-label="Language"><button data-lang="zh">中文</button><button data-lang="en">EN</button></div>
-    <svg class="dancer-hero" viewBox="0 0 240 256" role="img" aria-label="ballerina"><use href="#dancer"/></svg>
+    <svg class="dancer-hero" viewBox="0 0 240 256" role="img" aria-label="ballerina"><use href="#dancer" x="0" y="0" width="240" height="256"/></svg>
     <h1 class="brand" data-i="title"></h1>
     <div id="gLoading" class="gate-step"><div class="gate-dots"><i></i><i></i><i></i></div></div>
     <div id="gEmail" class="gate-step" hidden>
@@ -338,7 +339,7 @@ body.show-report #report{display:block}
 </section>
 
 <header>
-  <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer"/></svg><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
+  <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer" x="0" y="0" width="240" height="256"/></svg><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
   <nav class="tabs" aria-label="view"><button data-view="learn" data-i="navLearn"></button><button data-view="practice" data-i="navPractice"></button></nav>
   <p data-i="subtitle"></p>
   <div class="lang" role="group" aria-label="Language">
@@ -2044,7 +2045,7 @@ function poseSVG(dir, e, o = {}){
   const fp = f.B ? `M${r1(f.H.x)} ${r1(f.H.y)} L${r1(f.B.x)} ${r1(f.B.y)} L${r1(f.T.x)} ${r1(f.T.y)}` : `M${r1(f.H.x)} ${r1(f.H.y)} L${r1(f.T.x)} ${r1(f.T.y)}`;
   s.push(`<path d="${fp}" stroke="#f47aa8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`);
   // upper body (tutu covers the hips)
-  s.push(`<g${err === "hipHike" ? ' transform="rotate(-6 120 150)"' : ""}><use href="#dancerTop"/></g>`);
+  s.push(`<g${err === "hipHike" ? ' transform="rotate(-6 120 150)"' : ""}><use href="#dancerTop" x="0" y="0" width="240" height="262"/></g>`);
   if (o.arrow){
     const out = o.arrow === "out", x1 = out ? v.t0 : v.t0 + d * v.L, x2 = out ? v.t0 + d * v.L : v.t0;
     s.push(arrowSVG(x1, x2, 254, "#cf3577"));
@@ -2105,6 +2106,7 @@ function renderLearn(){
   if (!animOn) drawAnim(1, "hold");
   $("tipsList").innerHTML = ["tip_knees", "tip_floor", "tip_" + learnDir].map(k => `<li>${esc(t(k))}</li>`).join("");
   $("stepsRow").innerHTML = STEP_E.map((e, i) => `<div class="step">${poseSVG(learnDir, e, { tight: true, arrow: STEP_ARROW[i], alt: t(`s_${learnDir}_${i + 1}`) }).svg}<span class="n">${i + 1}</span><p>${esc(t(`s_${learnDir}_${i + 1}`))}</p></div>`).join("");
+  $("mistakesGrid").style.setProperty("--cols", MISTAKES[learnDir].length === 4 ? 2 : 3);
   $("mistakesGrid").innerHTML = MISTAKES[learnDir].map(err => {
     const e = err === "toeLift" ? 0.6 : 1;
     return `<div class="mistake">
