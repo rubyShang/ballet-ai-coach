@@ -1,0 +1,1710 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#a8437a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ballet Coach">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="config.js"></script>
+<title>Ballet AI Coach</title>
+<style>
+/* Layout: camera stage on the left, live checks + last-rep analysis + log on the right; stacks on phones */
+:root{
+  --bg:#f5f3f7; --surface:#ffffff; --fg:#201b26; --muted:#6c6577; --line:#e3deea;
+  --accent:#a8437a; --accent-ink:#ffffff; --ok:#1d8656; --bad:#cf3038; --na:#9a93a5;
+  --ph-flat:#6f86b0; --ph-demi:#e0a12a; --ph-point:#c2468a; --ph-off:#cf3038;
+  --font:"PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#141118; --surface:#1f1b25; --fg:#eee9f3; --muted:#a39bae; --line:#353040;
+  --accent:#e27fb1; --accent-ink:#1a1220; --ok:#4cc58d; --bad:#ff6f6f; --na:#6f6879;
+  --ph-flat:#8ea6d4; --ph-demi:#f2b84a; --ph-point:#e27fb1; --ph-off:#ff6f6f; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--font);padding:16px}
+header{max-width:1200px;margin:0 auto 14px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+h1{font-size:22px;margin:0;letter-spacing:.02em;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1 .module{font-size:13px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 10px;letter-spacing:0}
+header p{margin:0;color:var(--muted);font-size:13px;flex:1 1 300px}
+.lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;align-self:center}
+.lang button{border:0;border-radius:0;padding:5px 12px;font-size:13px}
+.lang button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+main{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){main{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stage{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;display:grid;place-items:center}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stage.mirror video,.stage.mirror canvas{transform:scaleX(-1)}
+.placeholder{color:#cfc8d8;text-align:center;padding:20px;font-size:14px;z-index:1;white-space:pre-line}
+.chips{position:absolute;left:10px;top:10px;z-index:2;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.chip{background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:4px 10px;font-size:15px;font-weight:600;display:flex;gap:8px;align-items:center}
+.chip i{width:12px;height:12px;border-radius:50%;background:var(--c,#999);display:inline-block}
+.chip small{font-weight:400;opacity:.8;font-size:12px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+button,select,label.btn{font:inherit;font-size:14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.status{font-size:13px;color:var(--muted);margin-top:8px;min-height:1.5em}
+h2{font-size:15px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h2 small{font-weight:400;color:var(--muted);font-size:12px;text-align:right}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center;padding:7px 10px;border-radius:8px;border:1px solid var(--line)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--na)}
+.checks li[data-s="ok"] .dot{background:var(--ok)}
+.checks li[data-s="bad"] .dot{background:var(--bad)}
+.checks li[data-s="bad"]{border-color:var(--bad)}
+.checks .name{font-weight:600}
+.checks .hint{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.checks .val{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);text-align:right;max-width:13em}
+.checks li[data-s="bad"] .val{color:var(--bad)}
+.timeline{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--bg);position:relative;margin:4px 0 2px}
+.timeline span{height:100%}
+.timeline .peak{position:absolute;top:0;bottom:0;width:2px;background:var(--fg)}
+.tl-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:14px;height:6px;border-radius:2px;margin-right:5px;vertical-align:middle;background:var(--c)}
+.note{font-size:12px;color:var(--muted);margin:6px 0 10px}
+.meta{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:10px}
+.meta b{color:var(--fg);font-size:20px;font-variant-numeric:tabular-nums;margin-right:4px}
+.reps{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px;max-height:220px;overflow:auto}
+.reps li{padding:5px 8px;border-radius:6px;background:var(--bg)}
+.reps .good{color:var(--ok);font-weight:600}
+.reps .err{color:var(--bad)}
+.side{display:grid;gap:16px;align-content:start;min-width:0}
+details summary{cursor:pointer;font-weight:600}
+.group{font-size:12px;color:var(--muted);margin:14px 0 0;border-top:1px solid var(--line);padding-top:8px}
+.slider{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-top:10px;font-size:13px}
+.slider input[type=range],.slider select{grid-column:1/-1;width:100%}
+.slider output{font-variant-numeric:tabular-nums;color:var(--muted)}
+.tips{font-size:13px;color:var(--muted);margin:0;padding-left:18px}
+.tips li{margin:3px 0}
+.empty{color:var(--muted);font-size:13px}
+.rec-chip{position:absolute;right:10px;top:10px;z-index:2}
+.rec-chip i{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.rec-chip i{animation:none}}
+button.rec-btn{border-color:var(--bad);color:var(--bad)}
+button.rec-btn.on{background:var(--bad);color:#fff}
+.recs{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.recs li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:7px 8px;border-radius:8px;background:var(--bg);font-size:13px}
+.recs .info{flex:1 1 140px;min-width:0;font-variant-numeric:tabular-nums}
+.recs .info small{display:block;color:var(--muted);font-size:12px}
+.recs button{padding:3px 10px;font-size:12px}
+.recs li.empty{background:none;display:block}
+.acct .row{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.acct input{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface);color:var(--fg);flex:1 1 160px;min-width:0}
+.acct input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.acct select{flex:1 1 160px}
+.acct label{display:block;font-size:12px;color:var(--muted);margin-top:10px}
+.acct .who{flex:1 1 auto;font-size:13px;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+#syncState.ok{color:var(--ok)}
+#syncState.err{color:var(--bad)}
+.exports{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.exports button{padding:4px 10px;font-size:12px}
+.exports small{flex-basis:100%;color:var(--muted);font-size:12px}
+
+/* ---------- report ---------- */
+#report{display:none}
+body.show-report > header, body.show-report > main{display:none}
+body.show-report #report{display:block}
+.rp-bar{max-width:880px;margin:0 auto 12px;display:flex;justify-content:space-between;gap:8px}
+.rp{max-width:880px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:28px 28px 20px}
+.rp h1{font-size:24px;margin:0 0 4px}
+.rp h2{font-size:17px;margin:28px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--accent);display:block}
+.rp .sub{color:var(--muted);font-size:13px;margin:0}
+.rp-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .v small{font-size:13px;font-weight:400;color:var(--muted);margin-left:4px}
+.focus{display:grid;gap:10px}
+.focus .item{border-left:4px solid var(--bad);padding:6px 12px;background:var(--bg);border-radius:0 8px 8px 0}
+.focus .item b{font-size:15px}
+.focus .item .cnt{color:var(--bad);font-size:13px;margin-left:8px;font-variant-numeric:tabular-nums}
+.focus .item p{margin:4px 0 0;font-size:13px}
+.good-msg{background:var(--bg);border-radius:8px;padding:10px 12px;color:var(--ok);font-weight:600}
+.rates{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr) 7.5em;gap:6px 10px;align-items:center;font-size:13px}
+.rates .bar{height:10px;background:var(--bg);border-radius:4px;overflow:hidden}
+.rates .bar span{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.rates .pct{font-variant-numeric:tabular-nums;text-align:right}
+.rates .pct.low{color:var(--bad);font-weight:600}
+.trend svg{width:100%;height:auto;display:block}
+.trend .cap{font-size:13px;font-weight:600;margin:0 0 4px}
+.heat-wrap{overflow-x:auto;margin-top:16px}
+.heat{border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.heat th,.heat td{padding:4px 8px;text-align:center;border:2px solid var(--surface)}
+.heat th:first-child,.heat td:first-child{text-align:left;white-space:nowrap}
+.heat th{color:var(--muted);font-weight:400}
+.rp-rep{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px;break-inside:avoid}
+.rp-rep .hd{display:flex;justify-content:space-between;gap:8px;font-weight:600;margin-bottom:8px;flex-wrap:wrap}
+.rp-rep .hd .ok{color:var(--ok)}
+.rp-rep .hd .bad{color:var(--bad)}
+.snaps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.snaps figure{margin:0}
+.snaps img{width:100%;border-radius:6px;display:block;background:#000}
+.snaps figcaption{font-size:11px;color:var(--muted);text-align:center;margin-top:2px}
+.rp-rep ul{margin:6px 0 0;padding-left:18px;font-size:13px}
+.rp-rep ul .v{color:var(--bad);margin-left:6px}
+.rp-rep .pass{font-size:13px;color:var(--ok);margin-top:6px}
+.rp-foot{margin-top:24px;font-size:11px;color:var(--muted);text-align:center}
+.note-sm{font-size:12px;color:var(--muted)}
+@media print{
+  :root{--bg:#f5f3f7;--surface:#fff;--fg:#201b26;--muted:#6c6577;--line:#e3deea;--accent:#a8437a;--ok:#1d8656;--bad:#cf3038;
+        --ph-flat:#6f86b0;--ph-demi:#e0a12a;--ph-point:#c2468a;--ph-off:#cf3038;color-scheme:light}
+  @page{size:A4;margin:12mm}
+  body{background:#fff;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .no-print{display:none!important}
+  .rp{border:0;padding:0;max-width:none}
+  .rp h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
+  <p data-i="subtitle"></p>
+  <div class="lang" role="group" aria-label="Language">
+    <button id="lang-zh" data-lang="zh">中文</button>
+    <button id="lang-en" data-lang="en">English</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <div class="stage" id="stage">
+      <div class="placeholder" id="placeholder" data-i="placeholder"></div>
+      <video id="video" playsinline muted></video>
+      <canvas id="overlay"></canvas>
+      <div class="chips" id="chips" hidden>
+        <div class="chip" id="phaseChip"><i></i><span>—</span><small></small></div>
+        <div class="chip" id="dirChip"><span>—</span></div>
+      </div>
+      <div class="chip rec-chip" id="recChip" hidden><i style="--c:#ff3b3b"></i><span></span></div>
+    </div>
+    <div class="controls">
+      <button class="primary" id="camBtn" data-i="camBtn"></button>
+      <select id="facing" aria-label="camera">
+        <option value="user" data-i="facingUser"></option>
+        <option value="environment" data-i="facingEnv"></option>
+      </select>
+      <label class="btn"><span data-i="upload"></span><input type="file" id="fileInput" accept="video/*" hidden></label>
+      <select id="speed" aria-label="speed">
+        <option value="0.25" data-i="speed025"></option>
+        <option value="0.5" data-i="speed05" selected></option>
+        <option value="1" data-i="speed1"></option>
+      </select>
+      <button id="stopBtn" data-i="stop" disabled></button>
+    </div>
+    <div class="controls">
+      <button id="recBtn" class="rec-btn" disabled></button>
+      <select id="recMode" aria-label="recording">
+        <option value="annotated" data-i="recAnnotated"></option>
+        <option value="raw" data-i="recRaw"></option>
+      </select>
+    </div>
+    <div class="legend">
+      <span style="--c:var(--ph-flat)" data-i="lgFlat"></span>
+      <span style="--c:var(--ph-demi)" data-i="lgDemi"></span>
+      <span style="--c:var(--ph-point)" data-i="lgPoint"></span>
+      <span style="--c:var(--ph-off)" data-i="lgOff"></span>
+      <span style="--c:var(--ok)" data-i="lgOk"></span>
+      <span style="--c:var(--bad)" data-i="lgBad"></span>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <aside class="side">
+    <div class="card acct" id="acctCard" hidden>
+      <h2><span data-i="account"></span> <small id="syncState"></small></h2>
+      <div id="acctOut">
+        <p class="note-sm" data-i="localOnly"></p>
+        <div class="row"><input type="email" id="email" data-ph="emailPh" autocomplete="email"><button id="sendCode" class="primary" data-i="sendCode"></button></div>
+        <div class="row" id="codeRow" hidden><input id="code" inputmode="numeric" autocomplete="one-time-code" data-ph="codePh"><button id="verifyCode" class="primary" data-i="verify"></button></div>
+      </div>
+      <div id="acctIn" hidden>
+        <div class="row"><span class="who" id="whoami"></span><button id="signOut" data-i="signOut"></button></div>
+        <label for="dancerSel" data-i="dancer"></label>
+        <div class="row"><select id="dancerSel"></select></div>
+        <div class="row"><input id="dancerName" data-ph="dancerPh"><button id="addDancer" data-i="addDancer"></button></div>
+      </div>
+      <p class="note-sm" id="acctMsg"></p>
+    </div>
+    <div class="card">
+      <h2><span data-i="liveTitle"></span> <small id="legInfo"></small></h2>
+      <ul class="checks" id="liveChecks"></ul>
+    </div>
+
+    <div class="card">
+      <h2><span data-i="repTitle"></span> <small id="repTitle"></small></h2>
+      <div id="repEmpty" class="empty" data-i="repEmpty"></div>
+      <div id="repBody" hidden>
+        <div class="timeline" id="timeline"></div>
+        <div class="tl-axis"><span data-i="axStart"></span><span data-i="axFar"></span><span data-i="axClose"></span></div>
+        <div class="note" id="repNote"></div>
+        <ul class="checks" id="repChecks"></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span data-i="sessionTitle"></span>
+        <span style="display:flex;gap:6px">
+          <button id="reportBtn" class="primary" style="padding:3px 10px;font-size:12px" data-i="reportBtn"></button>
+          <button id="resetBtn" style="padding:3px 10px;font-size:12px" data-i="reset"></button>
+        </span></h2>
+      <div class="meta">
+        <div><b id="repCount">0</b><span data-i="reps"></span></div>
+        <div><b id="goodCount">0</b><span data-i="allGood"></span></div>
+      </div>
+      <ul class="reps" id="reps"></ul>
+      <div class="exports">
+        <button id="exportFrames" data-i="exportFrames"></button>
+        <button id="exportReps" data-i="exportReps"></button>
+        <small id="frameInfo"></small>
+      </div>
+    </div>
+
+    <div class="card" id="histCard" hidden>
+      <h2 data-i="historyTitle"></h2>
+      <ul class="recs" id="histList"></ul>
+    </div>
+
+    <div class="card">
+      <h2 data-i="recsTitle"></h2>
+      <ul class="recs" id="recs"></ul>
+    </div>
+
+    <div class="card">
+      <details>
+        <summary data-i="settings"></summary>
+        <div class="slider"><label for="dir" data-i="dirLabel"></label><span></span>
+          <select id="dir">
+            <option value="auto" data-i="auto"></option>
+            <option value="devant" data-i="optDevant"></option>
+            <option value="seconde" data-i="optSeconde"></option>
+            <option value="derriere" data-i="optDerriere"></option>
+          </select></div>
+        <div class="slider"><label for="leg" data-i="legLabel"></label><span></span>
+          <select id="leg">
+            <option value="auto" data-i="auto"></option>
+            <option value="left" data-i="optLeft"></option>
+            <option value="right" data-i="optRight"></option>
+          </select></div>
+
+        <p class="group" data-i="grpPhase"></p>
+        <div class="slider"><label for="demiH" data-i="sDemiH"></label><output id="demiHOut"></output>
+          <input type="range" id="demiH" min="0.05" max="0.4" step="0.01" value="0.15"></div>
+        <div class="slider"><label for="pointH" data-i="sPointH"></label><output id="pointHOut"></output>
+          <input type="range" id="pointH" min="0.25" max="0.9" step="0.01" value="0.5"></div>
+
+        <p class="group" data-i="grpSeq"></p>
+        <div class="slider"><label for="liftMin" data-i="sLiftMin"></label><output id="liftMinOut"></output>
+          <input type="range" id="liftMin" min="0" max="60" step="5" value="20"></div>
+        <div class="slider"><label for="liftMax" data-i="sLiftMax"></label><output id="liftMaxOut"></output>
+          <input type="range" id="liftMax" min="40" max="100" step="5" value="80"></div>
+        <div class="slider"><label for="heelDownMin" data-i="sHeelDown"></label><output id="heelDownMinOut"></output>
+          <input type="range" id="heelDownMin" min="0" max="50" step="5" value="15"></div>
+        <div class="slider"><label for="demiMin" data-i="sDemiMin"></label><output id="demiMinOut"></output>
+          <input type="range" id="demiMin" min="0" max="40" step="5" value="10"></div>
+
+        <p class="group" data-i="grpPose"></p>
+        <div class="slider"><label for="kneeMin" data-i="sKnee"></label><output id="kneeMinOut"></output>
+          <input type="range" id="kneeMin" min="150" max="178" step="1" value="165"></div>
+        <div class="slider"><label for="hipMax" data-i="sHip"></label><output id="hipMaxOut"></output>
+          <input type="range" id="hipMax" min="2" max="15" step="1" value="6"></div>
+        <div class="slider"><label for="toeMax" data-i="sToe"></label><output id="toeMaxOut"></output>
+          <input type="range" id="toeMax" min="2" max="12" step="1" value="5"></div>
+        <div class="slider"><label for="pathMax" data-i="sPath"></label><output id="pathMaxOut"></output>
+          <input type="range" id="pathMax" min="3" max="15" step="1" value="6"></div>
+        <div class="slider"><label for="closeMax" data-i="sClose"></label><output id="closeMaxOut"></output>
+          <input type="range" id="closeMax" min="0.2" max="1" step="0.1" value="0.4"></div>
+
+        <p class="group" data-i="grpOther"></p>
+        <div class="slider"><label for="model" data-i="modelLabel"></label><span></span>
+          <select id="model">
+            <option value="lite" data-i="optLite"></option>
+            <option value="full" data-i="optFull"></option>
+          </select></div>
+        <div class="slider"><label><input type="checkbox" id="voice" checked> <span data-i="voiceLabel"></span></label></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2 data-i="tipsTitle"></h2>
+      <ul class="tips">
+        <li data-i="tip1"></li><li data-i="tip2"></li><li data-i="tip3"></li><li data-i="tip4"></li><li data-i="tip5"></li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<section id="report"></section>
+
+<script type="module">
+const VISION = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+// ---------- text (中文 / English) ----------
+const I18N = {
+  zh: {
+    title:"Ballet AI Coach", module:"Tendu 擦地", subtitle:"摄像头实时检查，也可以上传练习视频慢放分析。画面只在本机处理，不会上传。",
+    placeholder:"点下方「开启摄像头」或「上传视频」开始\n第一次加载模型需要几秒",
+    camBtn:"开启摄像头", facingUser:"前置摄像头", facingEnv:"后置摄像头", upload:"上传视频",
+    speed025:"0.25× 慢放", speed05:"0.5× 慢放", speed1:"1× 原速", stop:"停止",
+    lgFlat:"全脚掌擦地", lgDemi:"半脚尖", lgPoint:"全绷", lgOff:"脚尖离地", lgOk:"骨架：做对", lgBad:"骨架：要纠正",
+    liveTitle:"实时检查", repTitle:"上一次动作分析",
+    repEmpty:"做完一次 tendu（擦出去再收回来）后，这里会显示脚的阶段时间线和逐项判断。",
+    axStart:"出发", axFar:"最远点", axClose:"收回",
+    sessionTitle:"本次练习", reset:"清零", reps:"次", allGood:"次全对",
+    settings:"设置与阈值（按老师要求调整）", dirLabel:"动作方向", legLabel:"动作腿", auto:"自动识别",
+    optDevant:"Tendu devant（向前）", optSeconde:"Tendu à la seconde（向旁）", optDerriere:"Tendu derrière（向后）",
+    optLeft:"她的左腿", optRight:"她的右腿",
+    grpPhase:"脚的阶段（看左上角的实时标签来调）",
+    sDemiH:"半脚尖：脚跟抬起至少（脚长）", sPointH:"全绷：脚跟抬起至少（脚长）",
+    grpSeq:"顺序要求",
+    sLiftMin:"出去时脚跟最早在伸出多少时抬起", sLiftMax:"出去时脚跟最晚在伸出多少时抬起",
+    sHeelDown:"回来时脚跟至少在还伸出多少时落地", sDemiMin:"半脚尖阶段至少占出 / 回过程的",
+    grpPose:"姿态与路线",
+    sKnee:"膝盖伸直：至少多少度", sHip:"髋部倾斜：最多几度", sToe:"脚尖离地：最多（腿长的 %）",
+    sPath:"擦地路线：最多偏离（腿长的 %）", sClose:"收回空隙：最多几个脚长",
+    grpOther:"其他", modelLabel:"识别模型", optLite:"轻量（手机更流畅）", optFull:"完整（更准，电脑用）", voiceLabel:"语音提醒（中文）",
+    tipsTitle:"拍摄建议",
+    tip1:"Devant / derrière：从侧面拍，才看得清脚往前、往后的轨迹和脚跟起落",
+    tip2:"À la seconde：从正面拍，同时能看胯是否放平",
+    tip3:"镜头放在膝盖高度，全身入镜，脚一定要拍到",
+    tip4:"穿贴身练功服、浅色袜或鞋，背景简单、光线充足",
+    tip5:"先做几次慢的，看左上角标签是否在「全脚掌 → 半脚尖 → 全绷」之间正确切换，不准就调「脚的阶段」两个滑块",
+    // status
+    loading:"正在加载识别模型…", camDenied:"摄像头权限被拒绝了，请在浏览器地址栏旁边允许使用摄像头后再试。",
+    camFail:m=>"无法开启：" + m, modelFail:m=>"模型加载失败：" + m,
+    camOn:"摄像头已开启。站到全身都能拍到的位置。", fileOn:"正在分析视频（循环播放）。", stopped:"已停止。",
+    // legs / directions
+    left:"左腿", right:"右腿", legInfo:(l,a)=>"动作腿：" + l + (a ? "（自动）" : ""), legNone:"动作腿：—",
+    dirUnknown:"方向未知",
+    // checks
+    n_workKnee:"动作腿膝盖伸直", h_workKnee:"擦出去和收回时膝盖都不能弯", c_workKnee:"动作腿膝盖伸直",
+    n_supportKnee:"支撑腿膝盖伸直", h_supportKnee:"站着的那条腿要拉直", c_supportKnee:"支撑腿伸直",
+    n_hips:"胯放平", h_hips:"动作腿那边的胯不要顶起来（正面拍才看得到）", c_hips:"胯放平",
+    n_toe:"脚尖贴地", h_toe:"擦出和收回的整个过程脚尖都碰着地板", c_toe:"脚尖贴地",
+    n_floor:"脚尖全程贴地", c_floor:"脚尖贴地",
+    n_path:"擦地路线直", c_path:"路线走直",
+    n_outDemi:"出：经过半脚尖", c_outDemi:"出去要经过半脚尖",
+    n_lift:"出：脚跟抬起时机", c_lift:"注意脚跟抬起的时机",
+    n_point:"最远点全绷", c_point:"最远点绷直",
+    n_backDemi:"回：经过半脚尖", c_backDemi:"回来要经过半脚尖",
+    n_heelDown:"回：脚跟先落地", c_heelDown:"脚跟先落地再收",
+    n_close:"收回到位", c_close:"收紧",
+    // values
+    noPerson:"没看到人", unclear:"看不清", needFront:"需正面拍", whenOut:"出脚时检查", footUnclear:"看不清脚",
+    onFloor:"贴地", lifted:p=>"离地 " + p, deg:v=>v,
+    ph_off:"脚尖离地", ph_flat:"全脚掌", ph_demi:"半脚尖", ph_point:"全绷", chipUnknown:"脚：看不清", heel:v=>"脚跟 " + v,
+    offBoth:"出去和回来都离地", offOut:"出去时离地", offBack:"回来时离地", allOn:"全程贴地",
+    dev:p=>"偏离 " + p, noDemi:"没有经过半脚尖", reversed:"先全绷后半脚尖，顺序反了", badOrder:"顺序不对",
+    shortDemi:p=>"半脚尖太短（" + p + "）", demiShare:p=>"占 " + p,
+    neverLift:"脚跟一直没抬起", liftEarly:p=>"伸出 " + p + " 就抬了，太早", liftLate:p=>"伸出 " + p + " 才抬，太晚", liftOk:p=>"伸出 " + p + " 时抬起",
+    pointed:"全绷", onlyDemi:"只到半脚尖", heelNotUp:"脚跟没抬起",
+    noHeelDown:"收回时脚跟没落下", heelLate:p=>"还剩 " + p + " 才落，太晚", heelOk:p=>"还剩 " + p + " 时落下",
+    notClosed:"没收回就又出去", snug:"靠紧了", gap:g=>"空隙 " + g + " 脚长",
+    // notes
+    frontAmbig:"正面拍时前 / 后不容易分清，建议侧面拍，或在设置里手动选方向。",
+    noFacing:"看不出她面朝哪边，请在设置里手动选方向。", repUnclear:"这次脚部识别不清楚。",
+    secondeSide:"À la seconde 建议正面拍。", sideFor:d=>d + " 建议侧面拍，轨迹和脚跟起落更准。",
+    // log
+    repLine:(n,d,s)=>`第 ${n} 次 · ${d} · ${s} · `, allCorrect:"全部做对", noReps:"还没有记录", sep:"、",
+    // recording
+    recStart:"● 开始录制", recStop:"■ 停止录制", recAnnotated:"录制：带分析标注", recRaw:"录制：原始画面",
+    recsTitle:"录像", recsEmpty:"开启摄像头或上传视频后，点「开始录制」。录像暂存在这个页面里，关掉页面前记得点「保存」下载到电脑。",
+    recAnalyze:"放进来分析", recSave:"保存", recDelete:"删除", recSaved:"已保存",
+    tagAnnotated:"带标注", tagRaw:"原始画面", recRawOnlyCam:"上传的视频只能录「带分析标注」版本。",
+    recUnsupported:"这个浏览器不支持录制，请用电脑版 Chrome 或 Edge。", recFail:m=>"无法录制：" + m,
+    recDone:"录好了，在右边「录像」里可以保存或重新分析。",
+    leaveWarn:"还有没保存的录像或没上传完的数据，关掉页面会丢失。",
+    account:"账号与同步", localOnly:"登录后，练习结果会同步到云端，换手机或电脑也能看。不登录也能用，数据只存在这台设备上。",
+    emailPh:"你的邮箱", sendCode:"发送验证码", codePh:"邮件里的验证码", verify:"登录",
+    codeSent:e=>`验证码已发到 ${e}，没收到请看看垃圾邮件。`, signedInAs:e=>"已登录：" + e, signOut:"退出",
+    dancer:"现在练习的孩子", addDancer:"添加孩子", dancerPh:"孩子的名字",
+    needDancer:"先添加孩子的名字，练习结果会存在她的名下。",
+    syncOk:"✓ 已同步", syncPending:n=>`${n} 条等待上传…`, syncErr:"上传失败，稍后自动重试",
+    authErr:m=>"出错了：" + m, loadingHist:"正在读取…",
+    historyTitle:"历史练习", historyEmpty:"还没有以前的练习记录。", viewReport:"查看报告",
+    sessionRow:(n,g)=>`${n} 次 · 全对 ${g} 次`,
+    cloudHistoryNote:"历史记录保存在你的云端账号里，换设备登录也能看到。",
+    // report
+    reportBtn:"生成报告", rpBack:"← 返回", rpPrint:"打印 / 存为 PDF", rpTitle:"Tendu 练习报告",
+    noRepsForReport:"还没有记录到动作，先练几次再生成报告。",
+    minutes:m=>m + " 分钟", legsLine:(l,r)=>`左腿 ${l} 次 · 右腿 ${r} 次`,
+    rpSummary:"本次总结", tTotal:"总次数", tGood:"全部做对", tRate:"全对率", dirTile:(n,g)=>`${n} 次里全对 ${g} 次`,
+    rpFocus:"最需要练的地方", failCount:(f,n,p)=>`${n} 次里有 ${f} 次出错（${p}）`,
+    rpAllGood:"这次每一项都做对了，继续保持！",
+    rpRates:"各项通过率", needWork:"需加强", notMeasured:"没测到",
+    rpTrend:"长期进步趋势", trendChart:"每次练习的全对率", trendTable:"各项通过率（最近几次练习）",
+    trendNeedMore:"至少练习两次并生成报告后，这里会显示进步曲线。",
+    historyNote:"历史记录保存在这台电脑的这个浏览器里，换电脑或清除浏览器数据会丢失。",
+    clearHistory:"清除历史", confirmClear:"确定清除所有历史记录吗？", thisSession:"本次",
+    rpDetail:"逐次明细", snapStart:"出发", snapFar:"最远点", snapClose:"收回",
+    allPassed:"全部通过", repHead:(n,d,s,tm)=>`第 ${n} 次 · ${d} · ${s} · ${tm}`, generated:x=>"生成于 " + x,
+    detailCap:n=>`只显示最近 ${n} 次`,
+    t_workKnee:"擦地时想着把膝盖骨往上提、大腿前侧收紧。先在把杆边慢慢做，膝盖一弯就停下重来。",
+    t_supportKnee:"支撑腿像一根柱子往上拔，先把重心放稳在支撑脚上再出腿。",
+    t_hips:"两边胯骨像端着一碗水一样保持水平。可以先把出脚距离缩短，不顶胯了再慢慢加大。",
+    t_floor:"想象脚底在擦掉地板上的灰，脚尖始终保持往下压地的感觉。",
+    t_path:"在地上贴一条胶带当轨道，沿着线擦出去、沿着线收回来。",
+    t_outDemi:"分三拍慢慢做：全脚掌擦地 → 脚跟抬起到半脚尖 → 脚背绷直，每一拍停一下。",
+    t_lift:"按老师的要求控制脚跟抬起的时机：通常是脚跟尽量多压住地面，脚滑不动了再抬。",
+    t_point:"出到最远点时停 2 秒，检查脚背和脚趾是不是完全延伸了。",
+    t_backDemi:"回来时把出去的过程倒过来：先放到半脚尖，再落脚跟，不要绷着脚直接拖回来。",
+    t_heelDown:"脚跟先落地，再用全脚掌擦回来收进位置。",
+    t_close:"收回时两只脚要贴紧，想象脚之间夹着一张纸。",
+    // coordinates export
+    exportFrames:"导出逐帧坐标（CSV）", exportReps:"导出每次结果（CSV）",
+    frameInfo:(n,s)=>`已记录 ${n} 帧坐标（约 ${s} 秒）`, noFrames:"还没有坐标数据，先开启摄像头或上传视频。",
+  },
+  en: {
+    title:"Ballet AI Coach", module:"Tendu", subtitle:"Check tendus live with the camera, or upload a practice video and analyze it in slow motion. Video is processed on this device and never uploaded.",
+    placeholder:"Tap Start camera or Upload video below\nThe pose model takes a few seconds to load the first time",
+    camBtn:"Start camera", facingUser:"Front camera", facingEnv:"Back camera", upload:"Upload video",
+    speed025:"0.25× slow", speed05:"0.5× slow", speed1:"1× normal", stop:"Stop",
+    lgFlat:"Flat-foot brush", lgDemi:"Demi-pointe", lgPoint:"Full point", lgOff:"Toe off floor", lgOk:"Skeleton: correct", lgBad:"Skeleton: needs fixing",
+    liveTitle:"Live checks", repTitle:"Last tendu",
+    repEmpty:"After one tendu (brush out and close), the foot-phase timeline and each check appear here.",
+    axStart:"Start", axFar:"Farthest", axClose:"Close",
+    sessionTitle:"This session", reset:"Reset", reps:"tendus", allGood:"all correct",
+    settings:"Settings & thresholds (match the teacher's requirements)", dirLabel:"Direction", legLabel:"Working leg", auto:"Auto-detect",
+    optDevant:"Tendu devant (front)", optSeconde:"Tendu à la seconde (side)", optDerriere:"Tendu derrière (back)",
+    optLeft:"Her left leg", optRight:"Her right leg",
+    grpPhase:"Foot phases (tune while watching the live label, top left)",
+    sDemiH:"Demi-pointe: heel raised at least (foot lengths)", sPointH:"Full point: heel raised at least (foot lengths)",
+    grpSeq:"Sequence",
+    sLiftMin:"Going out: heel lifts no earlier than", sLiftMax:"Going out: heel lifts no later than",
+    sHeelDown:"Coming back: heel down while still this far out", sDemiMin:"Demi-pointe lasts at least (share of out / back)",
+    grpPose:"Posture & path",
+    sKnee:"Straight knee: at least", sHip:"Hip tilt: at most", sToe:"Toe lift: at most (% of leg length)",
+    sPath:"Path deviation: at most (% of leg length)", sClose:"Closing gap: at most (foot lengths)",
+    grpOther:"Other", modelLabel:"Pose model", optLite:"Lite (smoother on phones)", optFull:"Full (more accurate, for computers)", voiceLabel:"Voice cues (English)",
+    tipsTitle:"Filming tips",
+    tip1:"Devant / derrière: film from the side to see the path and the heel rising and lowering",
+    tip2:"À la seconde: film from the front; this also shows whether the hips stay level",
+    tip3:"Camera at knee height, whole body in frame, feet clearly visible",
+    tip4:"Fitted dancewear, light socks or shoes, plain background, good light",
+    tip5:"Do a few slow tendus first and check that the top-left label moves flat → demi-pointe → full point correctly; if not, adjust the two Foot phase sliders",
+    loading:"Loading the pose model…", camDenied:"Camera access was blocked. Allow the camera next to the address bar, then try again.",
+    camFail:m=>"Couldn't start: " + m, modelFail:m=>"Couldn't load the model: " + m,
+    camOn:"Camera on. Stand where your whole body is in frame.", fileOn:"Analyzing the video (looping).", stopped:"Stopped.",
+    left:"Left leg", right:"Right leg", legInfo:(l,a)=>"Working leg: " + l + (a ? " (auto)" : ""), legNone:"Working leg: —",
+    dirUnknown:"Direction unknown",
+    n_workKnee:"Working knee straight", h_workKnee:"Straight all the way out and back in", c_workKnee:"Straighten your working knee",
+    n_supportKnee:"Standing knee straight", h_supportKnee:"Pull up the standing leg", c_supportKnee:"Straighten your standing leg",
+    n_hips:"Hips level", h_hips:"Don't hitch the working hip (front view only)", c_hips:"Keep your hips level",
+    n_toe:"Toe on the floor", h_toe:"The toe touches the floor the whole way out and back", c_toe:"Keep your toe on the floor",
+    n_floor:"Toe on floor throughout", c_floor:"Keep your toe on the floor",
+    n_path:"Straight path", c_path:"Brush in a straight line",
+    n_outDemi:"Out: through demi-pointe", c_outDemi:"Go through demi-pointe on the way out",
+    n_lift:"Out: heel lift timing", c_lift:"Watch when your heel lifts",
+    n_point:"Fully pointed at the end", c_point:"Point your foot at the end",
+    n_backDemi:"Back: through demi-pointe", c_backDemi:"Go through demi-pointe coming back",
+    n_heelDown:"Back: heel down first", c_heelDown:"Lower your heel before you close",
+    n_close:"Closed fully", c_close:"Close tightly",
+    noPerson:"No one in view", unclear:"Not visible", needFront:"Front view needed", whenOut:"Checked when moving", footUnclear:"Feet not visible",
+    onFloor:"On floor", lifted:p=>"Lifted " + p, deg:v=>v,
+    ph_off:"Toe off floor", ph_flat:"Flat", ph_demi:"Demi-pointe", ph_point:"Pointed", chipUnknown:"Foot: not visible", heel:v=>"heel " + v,
+    offBoth:"Lifted going out and back", offOut:"Lifted going out", offBack:"Lifted coming back", allOn:"On the floor throughout",
+    dev:p=>"Off by " + p, noDemi:"Skipped demi-pointe", reversed:"Pointed before demi-pointe", badOrder:"Wrong order",
+    shortDemi:p=>"Demi-pointe too short (" + p + ")", demiShare:p=>p + " of the way",
+    neverLift:"Heel never lifted", liftEarly:p=>"Lifted at " + p + " out, too early", liftLate:p=>"Lifted at " + p + " out, too late", liftOk:p=>"Lifted at " + p + " out",
+    pointed:"Pointed", onlyDemi:"Only demi-pointe", heelNotUp:"Heel not lifted",
+    noHeelDown:"Heel never came down", heelLate:p=>"Heel down with " + p + " left, too late", heelOk:p=>"Heel down with " + p + " left",
+    notClosed:"Went out again before closing", snug:"Closed", gap:g=>"Gap " + g + " foot lengths",
+    frontAmbig:"From the front it's hard to tell front from back. Film from the side, or pick the direction in Settings.",
+    noFacing:"Can't tell which way she's facing. Pick the direction in Settings.", repUnclear:"The feet weren't clear this time.",
+    secondeSide:"Film à la seconde from the front.", sideFor:d=>"Film " + d + " from the side for a more accurate path and heel timing.",
+    repLine:(n,d,s)=>`#${n} · ${d} · ${s} · `, allCorrect:"All correct", noReps:"No tendus yet", sep:", ",
+    recStart:"● Record", recStop:"■ Stop recording", recAnnotated:"Record: with analysis overlay", recRaw:"Record: raw video",
+    recsTitle:"Recordings", recsEmpty:"Start the camera or upload a video, then tap Record. Recordings live in this page until you close it, so tap Save to download them.",
+    recAnalyze:"Analyze", recSave:"Save", recDelete:"Delete", recSaved:"Saved",
+    tagAnnotated:"overlay", tagRaw:"raw", recRawOnlyCam:"Uploaded videos can only be recorded with the analysis overlay.",
+    recUnsupported:"This browser can't record. Use Chrome or Edge on a computer.", recFail:m=>"Couldn't record: " + m,
+    recDone:"Recording finished. Save it or analyze it again under Recordings.",
+    leaveWarn:"You have unsaved recordings or data still uploading that will be lost.",
+    account:"Account & sync", localOnly:"Sign in to sync results to the cloud and see them on any phone or computer. Without signing in, data stays on this device.",
+    emailPh:"Your email", sendCode:"Send code", codePh:"Code from the email", verify:"Sign in",
+    codeSent:e=>`We sent a code to ${e}. Check your spam folder if it doesn't arrive.`, signedInAs:e=>"Signed in: " + e, signOut:"Sign out",
+    dancer:"Dancer practicing now", addDancer:"Add dancer", dancerPh:"Dancer's name",
+    needDancer:"Add your dancer's name first; results are saved under her name.",
+    syncOk:"✓ Synced", syncPending:n=>`${n} waiting to upload…`, syncErr:"Upload failed, retrying soon",
+    authErr:m=>"Something went wrong: " + m, loadingHist:"Loading…",
+    historyTitle:"Past sessions", historyEmpty:"No earlier sessions yet.", viewReport:"View report",
+    sessionRow:(n,g)=>`${n} tendus · ${g} all correct`,
+    cloudHistoryNote:"History is stored in your cloud account, so you can see it on any device after signing in.",
+    reportBtn:"Report", rpBack:"← Back", rpPrint:"Print / Save as PDF", rpTitle:"Tendu Practice Report",
+    noRepsForReport:"No tendus recorded yet. Practice a few, then make a report.",
+    minutes:m=>m + " min", legsLine:(l,r)=>`Left leg ${l} · Right leg ${r}`,
+    rpSummary:"Session summary", tTotal:"Tendus", tGood:"All correct", tRate:"Success rate", dirTile:(n,g)=>`${g} of ${n} correct`,
+    rpFocus:"What to work on", failCount:(f,n,p)=>`${f} of ${n} tendus (${p})`,
+    rpAllGood:"Every check was correct this session. Keep it up!",
+    rpRates:"Pass rate by check", needWork:"Needs work", notMeasured:"Not measured",
+    rpTrend:"Progress over time", trendChart:"Success rate per session", trendTable:"Pass rate by check (recent sessions)",
+    trendNeedMore:"After at least two sessions with a report, a progress chart appears here.",
+    historyNote:"History is stored in this browser on this computer. It's lost if you switch computers or clear browser data.",
+    clearHistory:"Clear history", confirmClear:"Clear all saved history?", thisSession:"Now",
+    rpDetail:"Each tendu", snapStart:"Start", snapFar:"Farthest", snapClose:"Close",
+    allPassed:"All checks passed", repHead:(n,d,s,tm)=>`#${n} · ${d} · ${s} · ${tm}`, generated:x=>"Generated " + x,
+    detailCap:n=>`Showing the last ${n}`,
+    t_workKnee:"Lift the kneecap and engage the front of the thigh while brushing. Practice slowly at the barre and restart whenever the knee bends.",
+    t_supportKnee:"Pull up through the standing leg like a column, and settle the weight on it before the foot moves.",
+    t_hips:"Keep both hip bones level, like carrying a bowl of water. Brush a shorter distance until the hip stays down, then extend.",
+    t_floor:"Imagine brushing dust off the floor; keep pressing down through the toes the whole time.",
+    t_path:"Put a strip of tape on the floor and brush out and back along it.",
+    t_outDemi:"Do it in three slow counts: flat brush, rise to demi-pointe, then point. Pause on each.",
+    t_lift:"Time the heel lift the way the teacher asks; usually the heel stays down as long as possible and lifts only when the foot can't slide further.",
+    t_point:"Hold the farthest point for 2 seconds and check that the instep and toes are fully stretched.",
+    t_backDemi:"Reverse the way out: release to demi-pointe, then lower the heel. Don't drag the pointed foot back.",
+    t_heelDown:"Lower the heel first, then brush in with the whole foot to close.",
+    t_close:"Close snugly, as if holding a sheet of paper between the feet.",
+    exportFrames:"Export frame coordinates (CSV)", exportReps:"Export results per tendu (CSV)",
+    frameInfo:(n,s)=>`${n} frames of coordinates recorded (about ${s} s)`, noFrames:"No coordinate data yet. Start the camera or upload a video first.",
+  },
+};
+let lang = "zh";
+try { lang = localStorage.getItem("tendu-lang") || (navigator.language.startsWith("zh") ? "zh" : "en"); } catch {}
+if (!I18N[lang]) lang = "zh";
+// t("key") or t("key", arg) — returns the string in the current language
+const t = (k, ...a) => { const v = I18N[lang][k] ?? I18N.zh[k] ?? k; return typeof v === "function" ? v(...a) : v; };
+// messages are stored as [state, key, arg] so they re-render when the language changes
+const fmt = m => [m[0], m[1] == null ? "—" : t(m[1], m[2])];
+
+const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+const MODELS = {
+  lite: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+  full: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task",
+};
+// MediaPipe landmark indices (the dancer's own left/right)
+const LEGS = {
+  left:  { hip:23, knee:25, ankle:27, heel:29, toe:31 },
+  right: { hip:24, knee:26, ankle:28, heel:30, toe:32 },
+};
+const DIRS = { devant:"Tendu devant", seconde:"Tendu à la seconde", derriere:"Tendu derrière" };
+const PHASES = { "-1":["ph_off","--ph-off"], "0":["ph_flat","--ph-flat"], "1":["ph_demi","--ph-demi"], "2":["ph_point","--ph-point"] };
+const LIVE = ["workKnee", "supportKnee", "hips", "toe"];                                     // every frame
+const REP  = ["floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close"];  // once per tendu
+
+const $ = id => document.getElementById(id);
+const video = $("video"), canvas = $("overlay"), ctx = canvas.getContext("2d"), stage = $("stage");
+let landmarker = null, loadedModel = null, running = false, mode = null, stream = null, rafId = 0, lastVideoTime = -1;
+let statusKey = null, statusArg = null;
+const setStatus = (k, a) => { statusKey = k; statusArg = a; $("status").textContent = k ? t(k, a) : ""; };
+
+// ---------- settings ----------
+const cfg = {};
+const SL = {
+  demiH:[v=>v, v=>v.toFixed(2)], pointH:[v=>v, v=>v.toFixed(2)],
+  liftMin:[v=>v/100, v=>v+"%"], liftMax:[v=>v/100, v=>v+"%"], heelDownMin:[v=>v/100, v=>v+"%"], demiMin:[v=>v/100, v=>v+"%"],
+  kneeMin:[v=>v, v=>v+"°"], hipMax:[v=>v, v=>v+"°"], toeMax:[v=>v/100, v=>v+"%"], pathMax:[v=>v/100, v=>v+"%"],
+  closeMax:[v=>v, v=>v.toFixed(1)],
+};
+function readCfg(){
+  for (const [id, [conv, show]] of Object.entries(SL)){ const v = +$(id).value; cfg[id] = conv(v); $(id + "Out").textContent = show(v); }
+  cfg.leg = $("leg").value; cfg.dir = $("dir").value; cfg.voice = $("voice").checked;
+}
+[...Object.keys(SL), "leg", "dir", "voice"].forEach(id => $(id).addEventListener("input", readCfg));
+readCfg();
+$("speed").addEventListener("change", () => { if (mode === "file") video.playbackRate = +$("speed").value; });
+
+// ---------- check list UI ----------
+function buildList(ul, keys, withHint){
+  const els = {};
+  for (const k of keys){
+    const li = document.createElement("li"); li.dataset.s = "na";
+    li.innerHTML = `<span class="dot"></span><span><span class="name"></span>${withHint ? '<span class="hint"></span>' : ""}</span><span class="val">—</span>`;
+    ul.appendChild(li); els[k] = li;
+  }
+  return els;
+}
+const liveEls = buildList($("liveChecks"), LIVE, true);
+const repEls = buildList($("repChecks"), REP, false);
+function labelLists(){
+  for (const k of LIVE){ liveEls[k].querySelector(".name").textContent = t("n_" + k); liveEls[k].querySelector(".hint").textContent = t("h_" + k); }
+  for (const k of REP) repEls[k].querySelector(".name").textContent = t("n_" + k);
+}
+function setRow(els, key, m){ const [s, val] = fmt(m); const li = els[key]; li.dataset.s = s; li.querySelector(".val").textContent = val; }
+
+// ---------- language switch ----------
+function applyLang(){
+  document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+  document.querySelectorAll("[data-i]").forEach(el => el.textContent = t(el.dataset.i));
+  document.querySelectorAll("[data-ph]").forEach(el => el.placeholder = t(el.dataset.ph));
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  labelLists();
+  if (statusKey) setStatus(statusKey, statusArg);
+  $("legInfo").textContent = lastLeg ? t("legInfo", t(lastLeg), cfg.leg === "auto") : t("legNone");
+  renderReps();
+  renderRecs(); updateRecUI(); updateFrameInfo();
+  if (lastRep) showRep(lastRep);
+  if (typeof renderAcct === "function"){ renderAcct(); renderHistList(); }
+  if (document.body.classList.contains("show-report")) renderReport(reportCtx);
+  if (lastDir !== undefined) $("dirChip").querySelector("span").textContent = lastDir ? DIRS[lastDir] : t("dirUnknown");
+}
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  try { localStorage.setItem("tendu-lang", lang); } catch {}
+  applyLang();
+}));
+
+// ---------- model ----------
+async function ensureModel(){
+  const want = $("model").value;
+  if (landmarker && loadedModel === want) return;
+  setStatus("loading");
+  const { PoseLandmarker, FilesetResolver } = await import(VISION);
+  const fs = await FilesetResolver.forVisionTasks(WASM);
+  const opts = d => ({ baseOptions:{ modelAssetPath: MODELS[want], delegate:d }, runningMode:"VIDEO", numPoses:1,
+                      minPoseDetectionConfidence:0.5, minTrackingConfidence:0.5 });
+  try { landmarker = await PoseLandmarker.createFromOptions(fs, opts("GPU")); }
+  catch { landmarker = await PoseLandmarker.createFromOptions(fs, opts("CPU")); }
+  loadedModel = want;
+}
+
+// ---------- sources ----------
+async function startCamera(){
+  stop();
+  try {
+    await ensureModel();
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:$("facing").value, width:{ideal:1280}, height:{ideal:720} }, audio:false });
+  } catch(e){
+    if (e && e.name === "NotAllowedError") setStatus("camDenied"); else setStatus("camFail", e.message || String(e));
+    return;
+  }
+  video.srcObject = stream; video.loop = false;
+  stage.classList.toggle("mirror", $("facing").value === "user");
+  await video.play();
+  mode = "cam"; begin();
+}
+async function startFile(file){
+  stop();
+  try { await ensureModel(); } catch(e){ setStatus("modelFail", e.message || String(e)); return; }
+  video.srcObject = null; video.src = URL.createObjectURL(file); video.loop = true;
+  stage.classList.remove("mirror");
+  await video.play(); video.playbackRate = +$("speed").value;
+  mode = "file"; begin();
+}
+function begin(){
+  $("placeholder").hidden = true; $("chips").hidden = false; $("stopBtn").disabled = false;
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  stage.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+  setStatus(mode === "cam" ? "camOn" : "fileOn");
+  srcId++;
+  running = true; lastVideoTime = -1; resetTracking(); updateRecUI(); loop();
+}
+function stop(){
+  stopRec();
+  running = false; cancelAnimationFrame(rafId); updateRecUI();
+  if (stream){ stream.getTracks().forEach(tr => tr.stop()); stream = null; }
+  video.pause(); $("stopBtn").disabled = true;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+$("camBtn").addEventListener("click", startCamera);
+$("fileInput").addEventListener("change", e => { const f = e.target.files[0]; if (f) startFile(f); e.target.value = ""; });
+$("stopBtn").addEventListener("click", () => { stop(); setStatus("stopped"); });
+
+function loop(){
+  if (!running) return;
+  if (video.readyState >= 2 && video.currentTime !== lastVideoTime){
+    lastVideoTime = video.currentTime;
+    if (canvas.width !== video.videoWidth){ canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
+    const res = landmarker.detectForVideo(video, performance.now());
+    analyze(res.landmarks && res.landmarks[0], res.worldLandmarks && res.worldLandmarks[0]);
+    if (recorder && recAnnotated) drawComposite();
+  }
+  rafId = requestAnimationFrame(loop);
+}
+
+// ---------- recording ----------
+// "with overlay" records a canvas that combines the video, the skeleton/trail and the labels;
+// "raw" records the camera stream directly (better for analyzing again later).
+// Frames are stored unmirrored so left/right stay correct when a recording is analyzed again.
+const comp = document.createElement("canvas"), cctx = comp.getContext("2d");
+let recorder = null, recAnnotated = true, recStartAt = 0, recTimer = 0, recordings = [], phaseColor = "#888";
+function pickMime(){
+  const c = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+  return c.find(m => MediaRecorder.isTypeSupported(m)) || "";
+}
+function startRec(){
+  if (!window.MediaRecorder){ setStatus("recUnsupported"); return; }
+  recAnnotated = $("recMode").value === "annotated" || mode === "file";
+  if (mode === "file" && $("recMode").value === "raw") setStatus("recRawOnlyCam");
+  let src;
+  if (recAnnotated){ comp.width = video.videoWidth; comp.height = video.videoHeight; drawComposite(); src = comp.captureStream(30); }
+  else src = stream;
+  const mime = pickMime();
+  let r;
+  try { r = new MediaRecorder(src, mime ? { mimeType: mime, videoBitsPerSecond: 5e6 } : undefined); }
+  catch(e){ setStatus("recFail", e.message || String(e)); return; }
+  const chunks = [], annotated = recAnnotated, started = performance.now();
+  r.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  r.onstop = () => {
+    const type = (r.mimeType || mime || "video/webm").split(";")[0];
+    const blob = new Blob(chunks, { type });
+    if (blob.size){ addRecording(blob, (performance.now() - started) / 1000, annotated); setStatus("recDone"); }
+  };
+  r.start(1000);
+  recorder = r; recStartAt = started;
+  clearInterval(recTimer); recTimer = setInterval(updateRecUI, 500);
+  updateRecUI();
+}
+function stopRec(){
+  if (recorder && recorder.state !== "inactive") recorder.stop();
+  recorder = null; clearInterval(recTimer); updateRecUI();
+}
+$("recBtn").addEventListener("click", () => recorder ? stopRec() : startRec());
+
+const mmss = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+function updateRecUI(){
+  const b = $("recBtn");
+  b.textContent = t(recorder ? "recStop" : "recStart");
+  b.classList.toggle("on", !!recorder);
+  b.disabled = !running && !recorder;
+  $("recMode").disabled = !!recorder;
+  $("recChip").hidden = !recorder;
+  if (recorder) $("recChip").querySelector("span").textContent = "REC " + mmss((performance.now() - recStartAt) / 1000);
+}
+
+function drawComposite(){
+  const w = comp.width, h = comp.height;
+  if (!w || !h) return;
+  cctx.drawImage(video, 0, 0, w, h);
+  cctx.drawImage(canvas, 0, 0, w, h);
+  const fs = Math.max(16, Math.round(h / 24)), pad = Math.round(fs * 0.45);
+  cctx.font = `600 ${fs}px "PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif`;
+  cctx.textBaseline = "middle";
+  const chip = $("phaseChip");
+  const rows = [
+    { text: chip.querySelector("span").textContent + "  " + chip.querySelector("small").textContent, dot: phaseColor },
+    { text: $("dirChip").querySelector("span").textContent },
+  ];
+  if (lastRep && !rep){
+    const bad = REP.filter(k => lastRep.R[k][0] === "bad");
+    rows.push({ text: bad.length ? "✗ " + bad.map(k => t("n_" + k)).join(t("sep")) : "✓ " + t("allCorrect"), dot: bad.length ? css("--bad") : css("--ok") });
+  }
+  let y = pad;
+  for (const r of rows){
+    const tw = cctx.measureText(r.text).width, dotW = r.dot ? fs * 0.9 : 0, bh = fs + pad;
+    cctx.fillStyle = "rgba(0,0,0,.6)";
+    cctx.fillRect(pad, y, tw + dotW + pad * 2, bh);
+    if (r.dot){ cctx.fillStyle = r.dot; cctx.beginPath(); cctx.arc(pad * 2 + fs * 0.3, y + bh / 2, fs * 0.3, 0, Math.PI * 2); cctx.fill(); }
+    cctx.fillStyle = "#fff"; cctx.fillText(r.text, pad * 2 + dotW, y + bh / 2);
+    y += bh + pad / 2;
+  }
+}
+
+function addRecording(blob, dur, annotated){
+  const d = new Date();
+  const p2 = n => String(n).padStart(2, "0");
+  const stamp = `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}`;
+  const ext = blob.type.includes("mp4") ? "mp4" : "webm";
+  recordings.unshift({ blob, url: URL.createObjectURL(blob), dur, annotated, when: `${p2(d.getHours())}:${p2(d.getMinutes())}`,
+                       name: `tendu-${stamp}${annotated ? "-overlay" : ""}.${ext}`, saved: false });
+  renderRecs();
+}
+function renderRecs(){
+  const ul = $("recs"); ul.innerHTML = "";
+  if (!recordings.length){ const li = document.createElement("li"); li.className = "empty"; li.textContent = t("recsEmpty"); ul.appendChild(li); return; }
+  for (const r of recordings){
+    const li = document.createElement("li");
+    const info = document.createElement("div"); info.className = "info";
+    info.textContent = `${r.when} · ${mmss(r.dur)} · ${(r.blob.size / 1048576).toFixed(1)} MB`;
+    const sm = document.createElement("small");
+    sm.textContent = t(r.annotated ? "tagAnnotated" : "tagRaw") + " · " + r.name.split(".").pop().toUpperCase() + (r.saved ? " · " + t("recSaved") : "");
+    info.appendChild(sm);
+    const mk = (key, fn) => { const b = document.createElement("button"); b.textContent = t(key); b.addEventListener("click", fn); return b; };
+    li.append(info,
+      mk("recAnalyze", () => startFile(r.blob)),
+      mk("recSave", () => { const a = document.createElement("a"); a.href = r.url; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); r.saved = true; renderRecs(); }),
+      mk("recDelete", () => { if (recorder) return; URL.revokeObjectURL(r.url); recordings = recordings.filter(x => x !== r); renderRecs(); }));
+    ul.appendChild(li);
+  }
+}
+window.addEventListener("beforeunload", e => {
+  saveHistory();
+  if (recorder || recordings.some(r => !r.saved) || cloud.queue.length){ e.preventDefault(); e.returnValue = t("leaveWarn"); }
+});
+
+// ---------- geometry ----------
+const W = () => canvas.width, H = () => canvas.height;
+const pt = (lm, i) => ({ x: lm[i].x * W(), y: lm[i].y * H(), v: lm[i].visibility ?? 1 });
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function angle(a, b, c){
+  const v1x = a.x-b.x, v1y = a.y-b.y, v2x = c.x-b.x, v2y = c.y-b.y;
+  const d = (v1x*v2x + v1y*v2y) / (Math.hypot(v1x,v1y) * Math.hypot(v2x,v2y) || 1);
+  return Math.acos(Math.max(-1, Math.min(1, d))) * 180 / Math.PI;
+}
+function segDist(p, a, b){
+  const dx = b.x - a.x, dy = b.y - a.y, len2 = dx*dx + dy*dy;
+  const u = len2 ? Math.max(0, Math.min(1, ((p.x-a.x)*dx + (p.y-a.y)*dy) / len2)) : 0;
+  return Math.hypot(p.x - (a.x + u*dx), p.y - (a.y + u*dy));
+}
+// how far the leg (hip -> ankle) leans away from vertical, in degrees
+const legLean = (hip, ankle) => Math.abs(Math.atan2(ankle.x - hip.x, ankle.y - hip.y)) * 180 / Math.PI;
+const ema = {};
+const smooth = (k, v, a = 0.45) => (ema[k] = ema[k] == null ? v : ema[k] * (1 - a) + v * a);
+const pct = e => Math.round(e * 100) + "%";
+
+// ---------- per-frame analysis ----------
+let workSide = "right", view = "front", facing = 0, lastLeg = null, lastRep = null, lastDir;
+const VIS = 0.5;
+function analyze(lm, wlm){
+  ctx.clearRect(0, 0, W(), H());
+  if (!lm){ LIVE.forEach(k => setRow(liveEls, k, ["na", "noPerson"])); setPhaseChip(null); return; }
+
+  const L = {}, R = {};
+  for (const k of ["hip","knee","ankle","heel","toe"]){ L[k] = pt(lm, LEGS.left[k]); R[k] = pt(lm, LEGS.right[k]); }
+  const leanL = smooth("leanL", legLean(L.hip, L.ankle)), leanR = smooth("leanR", legLean(R.hip, R.ankle));
+
+  // camera view (front vs side) and which way she faces (side view)
+  const ls = pt(lm, 11), rs = pt(lm, 12);
+  const shMid = { x:(ls.x+rs.x)/2, y:(ls.y+rs.y)/2 }, hipMid = { x:(L.hip.x+R.hip.x)/2, y:(L.hip.y+R.hip.y)/2 };
+  const torso = dist(shMid, hipMid) || 1;
+  view = smooth("shw", dist(ls, rs) / torso) > 0.45 ? "front" : "side";
+  const nose = pt(lm, 0), earX = (lm[7].x + lm[8].x) / 2 * W();
+  const f = smooth("facing", nose.x - earX);
+  facing = Math.abs(f) < 0.02 * torso ? 0 : Math.sign(f);
+
+  // which leg is working
+  if (cfg.leg !== "auto") workSide = cfg.leg;
+  else if (Math.max(leanL, leanR) > 9 && Math.abs(leanL - leanR) > 5) workSide = leanL > leanR ? "left" : "right";
+  const work = workSide === "left" ? L : R, sup = workSide === "left" ? R : L;
+  const workLean = workSide === "left" ? leanL : leanR;
+  lastLeg = workSide;
+  $("legInfo").textContent = t("legInfo", t(workSide), cfg.leg === "auto");
+
+  const legLen = dist(sup.hip, sup.ankle) || 1;
+  const footRef = 0.27 * legLen;               // a foot is roughly 27% of hip-to-ankle length
+  const extended = workLean > 12;
+  const out = {};
+
+  // knees
+  for (const [key, leg] of [["workKnee", work], ["supportKnee", sup]]){
+    if (Math.min(leg.hip.v, leg.knee.v, leg.ankle.v) < VIS){ out[key] = ["na", "unclear"]; continue; }
+    const a = smooth(key, angle(leg.hip, leg.knee, leg.ankle));
+    out[key] = [a >= cfg.kneeMin ? "ok" : "bad", "deg", Math.round(a) + "°"];
+  }
+  // hips level (front view only)
+  if (view !== "front" || Math.min(L.hip.v, R.hip.v) < VIS) out.hips = ["na", "needFront"];
+  else {
+    const tilt = smooth("hips", Math.abs(Math.atan2(L.hip.y - R.hip.y, Math.abs(L.hip.x - R.hip.x))) * 180 / Math.PI);
+    out.hips = [tilt <= cfg.hipMax ? "ok" : "bad", "deg", tilt.toFixed(1) + "°"];
+  }
+
+  // foot phase: from heel height and toe height above the floor (floor = standing foot)
+  let ph = null, heelH = null, toeLift = null;
+  if (Math.min(work.toe.v, work.heel.v, sup.toe.v, sup.heel.v) >= VIS){
+    const floorY = Math.max(sup.toe.y, sup.heel.y);
+    heelH = smooth("heelH", (floorY - work.heel.y) / footRef);
+    toeLift = smooth("toeLift", (floorY - work.toe.y) / legLen);
+    ph = toeLift > cfg.toeMax ? -1 : heelH >= cfg.pointH ? 2 : heelH >= cfg.demiH ? 1 : 0;
+  }
+  if (!(extended || rep)) out.toe = ["na", "whenOut"];
+  else if (ph === null) out.toe = ["na", "footUnclear"];
+  else out.toe = ph === -1 ? ["bad", "lifted", pct(toeLift)] : ["ok", "onFloor"];
+  setPhaseChip(ph, heelH);
+
+  trackRep({ t: video.currentTime, lean: workLean, ph, toe: { x: work.toe.x, y: work.toe.y }, toeVis: work.toe.v }, out, work, sup, legLen, footRef);
+
+  for (const k of LIVE) setRow(liveEls, k, out[k]);
+  draw(lm, work, sup, out);
+  afterDraw();
+  recordFrame(lm, wlm, ph, workLean, heelH);
+  voice(out);
+}
+
+function setPhaseChip(ph, heelH){
+  const chip = $("phaseChip");
+  if (ph === null){ chip.style.setProperty("--c", "#888"); chip.querySelector("span").textContent = t("chipUnknown"); chip.querySelector("small").textContent = ""; return; }
+  const [key, tok] = PHASES[ph];
+  chip.style.setProperty("--c", `var(${tok})`);
+  phaseColor = css(tok);
+  chip.querySelector("span").textContent = t(key);
+  chip.querySelector("small").textContent = t("heel", heelH.toFixed(2));
+}
+
+// ---------- drawing ----------
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function draw(lm, work, sup, out){
+  const col = s => s === "ok" ? css("--ok") : s === "bad" ? css("--bad") : "rgba(255,255,255,.75)";
+  const lw = Math.max(3, W() / 220);
+  const seg = (a, b, c) => { if (a.v < 0.3 || b.v < 0.3) return; ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); };
+  const P = i => pt(lm, i), neutral = "rgba(255,255,255,.55)";
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+  // toe trail, coloured by foot phase
+  if (!rep && trail.length && performance.now() - trailEnd > 5000) trail = [];
+  if (trail.length > 1){
+    ctx.lineWidth = lw * 1.1;
+    for (let i = 1; i < trail.length; i++){
+      ctx.strokeStyle = trail[i].ph === null ? neutral : css(PHASES[trail[i].ph][1]);
+      ctx.beginPath(); ctx.moveTo(trail[i-1].x, trail[i-1].y); ctx.lineTo(trail[i].x, trail[i].y); ctx.stroke();
+    }
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(trail[0].x, trail[0].y, lw * 1.4, 0, Math.PI * 2); ctx.fill();
+  }
+
+  [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24]].forEach(([a,b]) => seg(P(a), P(b), neutral));
+  seg(P(23), P(24), col(out.hips[0]));
+  seg(work.hip, work.knee, col(out.workKnee[0])); seg(work.knee, work.ankle, col(out.workKnee[0]));
+  seg(sup.hip, sup.knee, col(out.supportKnee[0])); seg(sup.knee, sup.ankle, col(out.supportKnee[0]));
+  const footCol = out.toe[0] === "bad" ? css("--bad") : "rgba(255,255,255,.9)";
+  seg(work.ankle, work.heel, footCol); seg(work.ankle, work.toe, footCol); seg(work.heel, work.toe, footCol);
+  seg(sup.ankle, sup.heel, neutral); seg(sup.ankle, sup.toe, neutral); seg(sup.heel, sup.toe, neutral);
+  for (const p of [work.hip, work.knee, work.ankle, work.heel, work.toe, sup.hip, sup.knee, sup.ankle]){
+    if (p.v < 0.3) continue; ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(p.x, p.y, lw * 1.1, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+// ---------- rep tracking ----------
+// A rep starts when the working leg leans > 7° and counts once it passes 12°.
+// The last 3 s of frames are buffered so the start of the slide (flat-foot phase) is kept:
+// the rep is back-dated to the last moment the leg was still at rest.
+// Progress is measured by the toe's distance from where it started (not the leg angle,
+// which returns to vertical while a flat foot is still out). The rep ends when the toe
+// is back home or stops on the way back, or if it goes out again without closing.
+// Timing uses the video's own clock, so slow-motion playback behaves the same.
+let rep = null, reps = [], trail = [], trailEnd = 0, buf = [];
+function resetTracking(){ rep = null; buf = []; trail = []; }
+function trackRep(s, out, work, sup, legLen, footRef){
+  if (buf.length && s.t < buf[buf.length - 1].t) resetTracking();          // video looped
+  buf.push(s);
+  while (buf.length && s.t - buf[0].t > 3.0) buf.shift();
+
+  if (!rep){
+    if (s.lean <= 7) return;
+    const minLean = Math.min(...buf.map(b => b.lean));
+    let k = 0; buf.forEach((b, i) => { if (b.lean <= minLean + 1) k = i; });
+    rep = { start: buf[k].t, side: workSide, max: s.lean, phase: "out", errors: new Set(), S: buf.slice(k), s0: buf[k].toe, maxD: 0,
+            seen: new Set(), needStart: true, farDirty: false, hasFar: false };
+    trail = rep.S.filter(b => b.toeVis >= 0.3).map(b => ({ x: b.toe.x, y: b.toe.y, ph: b.ph }));
+  } else {
+    rep.S.push(s);
+    if (s.toeVis >= 0.3) trail.push({ x: s.toe.x, y: s.toe.y, ph: s.ph });
+  }
+  rep.max = Math.max(rep.max, s.lean);
+  const d = dist(s.toe, rep.s0) / legLen;
+  if (d >= rep.maxD) rep.farDirty = true;                 // new farthest point: keep this frame
+  rep.maxD = Math.max(rep.maxD, d);
+  for (const k of LIVE) if (out[k][0] !== "na") rep.seen.add(k);
+  const recent = rep.S.filter(b => s.t - b.t <= 0.3);
+  const stable = recent.length >= 3 && recent.every(b => dist(b.toe, s.toe) < 0.02 * legLen);
+  if (rep.max > 12) for (const k of LIVE) if (k !== "toe" && out[k][0] === "bad") rep.errors.add(k);
+
+  if (rep.phase === "out"){
+    if (rep.max <= 12 && s.lean < 5){ rep = null; trail = []; return; }    // just a wobble
+    if (rep.max > 12 && d < rep.maxD * 0.6) rep.phase = "back";
+  } else if (d > rep.maxD * 0.75) finishRep(work, sup, legLen, footRef, false);        // went out again
+  else if (d < rep.maxD * 0.1 || (stable && d < rep.maxD * 0.5)) finishRep(work, sup, legLen, footRef, true);
+}
+
+function detectDirection(D){
+  if (cfg.dir !== "auto") return { dir: cfg.dir, note: null };
+  const len = Math.hypot(D.x, D.y) || 1;
+  if (view === "front"){
+    if (Math.abs(D.x) >= 0.6 * len) return { dir: "seconde", note: null };
+    return { dir: D.y > 0 ? "devant" : "derriere", note: ["frontAmbig"] };
+  }
+  if (!facing) return { dir: null, note: ["noFacing"] };
+  return { dir: D.x * facing > 0 ? "devant" : "derriere", note: null };
+}
+
+function judgeRep(S, closedNormally, work, sup, legLen, footRef){
+  const R = {};
+  const V = S.filter(s => s.ph !== null && s.toeVis >= 0.3);
+  if (V.length < 8){ REP.forEach(k => R[k] = ["na", "footUnclear"]); return { R, dir: null, note: ["repUnclear"], V: null, mi: 0 }; }
+  const s0 = V[0].toe;
+  let mi = 0;
+  V.forEach((s, i) => { s.d = dist(s.toe, s0); if (s.d > V[mi].d) mi = i; });
+  const maxD = V[mi].d || 1;
+  V.forEach(s => s.e = s.d / maxD);
+  const O = V.slice(0, mi + 1), B = V.slice(mi);
+  // share of frames in phase p, ignoring toe-off frames (those are reported by the floor check)
+  const frac = (arr, p) => { const a = arr.filter(s => s.ph !== -1); return a.length ? a.filter(s => s.ph === p).length / a.length : 0; };
+  const idx = (arr, p) => arr.findIndex(s => s.ph === p);
+  let { dir, note } = detectDirection({ x: V[mi].toe.x - s0.x, y: V[mi].toe.y - s0.y });
+
+  // toe stays on the floor
+  const offO = O.some(s => s.ph === -1), offB = B.some(s => s.ph === -1);
+  R.floor = offO || offB ? ["bad", offO && offB ? "offBoth" : offO ? "offOut" : "offBack"] : ["ok", "allOn"];
+
+  // path: deviation from straight lines start -> farthest -> end
+  const e = V[V.length - 1].toe, fp = V[mi].toe;
+  let dev = 0;
+  V.forEach((s, i) => { dev = Math.max(dev, i <= mi ? segDist(s.toe, s0, fp) : segDist(s.toe, fp, e)); });
+  dev /= legLen;
+  R.path = [dev <= cfg.pathMax ? "ok" : "bad", "dev", pct(dev)];
+
+  // out: flat -> demi -> point
+  const oD = frac(O, 1), oDi = idx(O, 1), oPi = idx(O, 2);
+  if (oD === 0) R.outDemi = ["bad", "noDemi"];
+  else if (oPi >= 0 && oPi < oDi) R.outDemi = ["bad", "reversed"];
+  else if (oD < cfg.demiMin) R.outDemi = ["bad", "shortDemi", pct(oD)];
+  else R.outDemi = ["ok", "demiShare", pct(oD)];
+
+  // when the heel leaves the floor on the way out
+  const firstLift = O.find(s => s.ph >= 1 || s.ph === -1);
+  if (!firstLift) R.lift = ["bad", "neverLift"];
+  else if (firstLift.e < cfg.liftMin) R.lift = ["bad", "liftEarly", pct(firstLift.e)];
+  else if (firstLift.e > cfg.liftMax) R.lift = ["bad", "liftLate", pct(firstLift.e)];
+  else R.lift = ["ok", "liftOk", pct(firstLift.e)];
+
+  // fully pointed at the far end
+  const far = V.filter(s => s.e >= 0.9);
+  R.point = frac(far, 2) >= 0.5 ? ["ok", "pointed"] : ["bad", frac(far, 1) >= frac(far, 0) ? "onlyDemi" : "heelNotUp"];
+
+  // back: point -> demi -> flat
+  const bD = frac(B, 1), bDi = idx(B, 1), bFi = idx(B, 0);
+  if (bD === 0) R.backDemi = ["bad", "noDemi"];
+  else if (bFi >= 0 && bFi < bDi) R.backDemi = ["bad", "badOrder"];
+  else if (bD < cfg.demiMin) R.backDemi = ["bad", "shortDemi", pct(bD)];
+  else R.backDemi = ["ok", "demiShare", pct(bD)];
+
+  // heel must land before the foot closes
+  if (bFi < 0) R.heelDown = ["bad", "noHeelDown"];
+  else if (B[bFi].e < cfg.heelDownMin) R.heelDown = ["bad", "heelLate", pct(B[bFi].e)];
+  else R.heelDown = ["ok", "heelOk", pct(B[bFi].e)];
+
+  // closing gap between the two feet
+  if (!closedNormally) R.close = ["bad", "notClosed"];
+  else if (Math.min(work.heel.v, work.toe.v, sup.heel.v, sup.toe.v) < 0.2) R.close = ["na", "footUnclear"];
+  else {
+    const gap = Math.min(
+      segDist(work.heel, sup.heel, sup.toe), segDist(work.toe, sup.heel, sup.toe), segDist(work.ankle, sup.heel, sup.toe),
+      segDist(sup.heel, work.heel, work.toe), segDist(sup.toe, work.heel, work.toe)) / footRef;
+    R.close = gap < 0.1 ? ["ok", "snug"] : [gap <= cfg.closeMax ? "ok" : "bad", "gap", gap.toFixed(1)];
+  }
+
+  // filming advice for this direction
+  if (!note && dir === "seconde" && view === "side") note = ["secondeSide"];
+  if (!note && dir && dir !== "seconde" && view === "front") note = ["sideFor", DIRS[dir]];
+  return { R, dir, note, V, mi };
+}
+
+function finishRep(work, sup, legLen, footRef, closedNormally){
+  const r = rep; rep = null; trailEnd = performance.now();
+  if (video.currentTime - r.start < 0.35) return;
+  const res = judgeRep(r.S, closedNormally, work, sup, legLen, footRef);
+  for (const k of REP) if (res.R[k][0] === "bad") r.errors.add(k);
+  const segs = res.V ? compressSegs(res.V) : null;
+  const peak = res.V ? res.mi / Math.max(1, res.V.length - 1) : 0;
+  const measured = [...r.seen].filter(k => k !== "toe").concat(REP.filter(k => res.R[k][0] !== "na"));
+  const rec = { n: reps.length + 1, side: r.side, dir: res.dir, errors: [...r.errors], R: res.R, segs, peak, measured,
+                at: Date.now(), t0: r.start, t1: video.currentTime,
+                snaps: { start: r.snapStart || null, far: r.hasFar ? farC.toDataURL("image/jpeg", 0.72) : null, close: null } };
+  reps.push(rec);
+  if (!sessionStart) sessionStart = rec.at;
+  pendingClose = rec;                                      // closing frame is captured after this frame is drawn
+  labelFrames(r.start, video.currentTime, rec.n);
+  rec.id = uuid(); rec.sessionKey = sessionId; rec.sessionStart = sessionStart;
+  rec.coords = repCoords(rec.n);
+  if (reps.length === 1) sessionDancer = cloud.dancerId;
+  enqueueRep(rec);
+  lastRep = { ...res, side: r.side, segs, peak };
+  lastDir = res.dir;
+  showRep(lastRep);
+  renderReps();
+  $("dirChip").querySelector("span").textContent = res.dir ? DIRS[res.dir] : t("dirUnknown");
+  const firstBad = REP.find(k => res.R[k][0] === "bad");
+  if (firstBad) say(t("c_" + firstBad), true);
+}
+
+// consecutive frames in the same phase -> [{ph, w}] with w = share of the rep
+function compressSegs(V){
+  const segs = [];
+  V.forEach(s => { const last = segs[segs.length - 1]; if (last && last.ph === s.ph) last.n++; else segs.push({ ph: s.ph, n: 1 }); });
+  return segs.map(sg => ({ ph: sg.ph, w: sg.n / V.length }));
+}
+function fillTimeline(tl, segs, peak){
+  tl.innerHTML = "";
+  if (!segs) return;
+  for (const sg of segs){
+    const el = document.createElement("span");
+    el.style.width = (sg.w * 100) + "%";
+    el.style.background = `var(${PHASES[sg.ph][1]})`;
+    el.title = t(PHASES[sg.ph][0]);
+    tl.appendChild(el);
+  }
+  const p = document.createElement("i"); p.className = "peak"; p.style.left = (peak * 100) + "%";
+  tl.appendChild(p);
+}
+function showRep({ R, dir, note, segs, peak, side }){
+  $("repEmpty").hidden = true; $("repBody").hidden = false;
+  $("repTitle").textContent = (dir ? DIRS[dir] : t("dirUnknown")) + " · " + t(side);
+  $("repNote").textContent = note ? t(note[0], note[1]) : "";
+  $("repNote").hidden = !note;
+  for (const k of REP) setRow(repEls, k, R[k]);
+  fillTimeline($("timeline"), segs, peak);
+}
+
+function renderReps(){
+  $("repCount").textContent = reps.length;
+  $("goodCount").textContent = reps.filter(r => !r.errors.length).length;
+  const ul = $("reps"); ul.innerHTML = "";
+  if (!reps.length){ const li = document.createElement("li"); li.className = "empty"; li.style.background = "none"; li.textContent = t("noReps"); ul.appendChild(li); return; }
+  reps.slice().reverse().slice(0, 40).forEach((r, i) => {
+    const li = document.createElement("li");
+    const head = document.createElement("span");
+    head.textContent = t("repLine", reps.length - i, r.dir ? DIRS[r.dir].replace("Tendu ", "") : "?", t(r.side));
+    const body = document.createElement("span");
+    if (!r.errors.length){ body.className = "good"; body.textContent = t("allCorrect"); }
+    else { body.className = "err"; body.textContent = r.errors.map(k => t("n_" + k)).join(t("sep")); }
+    li.append(head, body); ul.appendChild(li);
+  });
+}
+function newSession(){
+  saveHistory(); cloudSummary();
+  reps = []; trail = []; lastRep = null; frames = []; sessionId = uuid(); sessionStart = null; sessionDancer = null;
+  renderReps(); updateFrameInfo();
+  $("repEmpty").hidden = false; $("repBody").hidden = true; $("repTitle").textContent = "";
+}
+$("resetBtn").addEventListener("click", newSession);
+
+// ---------- keyframe snapshots (start / farthest / close of each tendu) ----------
+const SNAP_W = 360;
+const farC = document.createElement("canvas"), farCtx = farC.getContext("2d");
+const tmpC = document.createElement("canvas"), tmpCtx = tmpC.getContext("2d");
+let pendingClose = null;
+function snapTo(c, cx){
+  const w = SNAP_W, h = Math.round(w * H() / W()) || 200;
+  if (c.width !== w || c.height !== h){ c.width = w; c.height = h; }
+  cx.drawImage(video, 0, 0, w, h); cx.drawImage(canvas, 0, 0, w, h);
+}
+const snapURL = () => { snapTo(tmpC, tmpCtx); return tmpC.toDataURL("image/jpeg", 0.72); };
+function afterDraw(){
+  if (rep && rep.needStart){ rep.snapStart = snapURL(); rep.needStart = false; }
+  if (rep && rep.farDirty){ snapTo(farC, farCtx); rep.farDirty = false; rep.hasFar = true; }
+  if (pendingClose){ pendingClose.snaps.close = snapURL(); pendingClose = null; }
+}
+
+// ---------- per-frame coordinates ----------
+const LM_NAMES = ["nose","left_eye_inner","left_eye","left_eye_outer","right_eye_inner","right_eye","right_eye_outer","left_ear","right_ear",
+  "mouth_left","mouth_right","left_shoulder","right_shoulder","left_elbow","right_elbow","left_wrist","right_wrist","left_pinky","right_pinky",
+  "left_index","right_index","left_thumb","right_thumb","left_hip","right_hip","left_knee","right_knee","left_ankle","right_ankle",
+  "left_heel","right_heel","left_foot_index","right_foot_index"];
+const PH_CODE = { "-1":"toe_off", "0":"flat", "1":"demi_pointe", "2":"point" };
+const MAX_FRAMES = 60000;                                // about 30 minutes at 30 fps
+let frames = [], srcId = 0, sessionId = uuid(), sessionStart = null, sessionDancer = null;
+function recordFrame(lm, wlm, ph, lean, heelH){
+  const img = new Float32Array(99), world = wlm ? new Float32Array(99) : null;
+  for (let i = 0; i < 33; i++){
+    img[i*3] = lm[i].x; img[i*3+1] = lm[i].y; img[i*3+2] = lm[i].visibility ?? 1;
+    if (world){ world[i*3] = wlm[i].x; world[i*3+1] = wlm[i].y; world[i*3+2] = wlm[i].z; }
+  }
+  frames.push({ src: srcId, t: video.currentTime, wall: Date.now(), rep: 0, side: workSide, ph, lean, heelH,
+                vw: video.videoWidth, vh: video.videoHeight, img, world });
+  if (frames.length > MAX_FRAMES) frames.shift();
+  if (frames.length % 30 === 0) updateFrameInfo();
+}
+// after a tendu is judged, tag its frames with the tendu number
+function labelFrames(t0, t1, n){
+  for (let i = frames.length - 1; i >= 0; i--){
+    const f = frames[i];
+    if (f.src !== srcId || f.t > t1 + 0.001) { if (f.src !== srcId) break; continue; }
+    if (f.t < t0) break;
+    f.rep = n;
+  }
+}
+function updateFrameInfo(){
+  const n = frames.length, secs = n ? Math.round((frames[n-1].wall - frames[0].wall) / 1000) : 0;
+  $("frameInfo").textContent = n ? t("frameInfo", n, secs) : "";
+}
+function downloadText(name, text, type){
+  const blob = new Blob(["﻿" + text], { type });            // BOM so Excel reads Chinese correctly
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+const stampNow = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; };
+const csvCell = v => { const s = v == null ? "" : String(v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const num = (v, d = 5) => v == null || Number.isNaN(v) ? "" : (+v).toFixed(d);
+
+$("exportFrames").addEventListener("click", () => {
+  if (!frames.length){ setStatus("noFrames"); return; }
+  const head = ["source","frame","time_s","wall_clock","tendu","working_leg","foot_phase","leg_lean_deg","heel_height_footlen","video_w","video_h"];
+  for (const n of LM_NAMES) head.push(n + "_x", n + "_y", n + "_vis");
+  for (const n of LM_NAMES) head.push(n + "_wx_m", n + "_wy_m", n + "_wz_m");
+  const rows = [head.join(",")];
+  frames.forEach((f, i) => {
+    const r = [f.src, i, num(f.t, 3), new Date(f.wall).toISOString(), f.rep || "", f.side, f.ph == null ? "" : PH_CODE[f.ph],
+               num(f.lean, 2), num(f.heelH, 3), f.vw, f.vh];
+    for (let k = 0; k < 99; k++) r.push(num(f.img[k]));
+    for (let k = 0; k < 99; k++) r.push(f.world ? num(f.world[k]) : "");
+    rows.push(r.join(","));
+  });
+  downloadText(`tendu-coordinates-${stampNow()}.csv`, rows.join("\n"), "text/csv");
+});
+$("exportReps").addEventListener("click", () => {
+  if (!reps.length){ setStatus("noRepsForReport"); return; }
+  const keys = ["workKnee", "supportKnee", "hips", ...REP];
+  const head = ["tendu","clock_time","video_start_s","video_end_s","direction","working_leg","all_correct"];
+  for (const k of keys) head.push(k, k + "_detail");
+  const rows = [head.join(",")];
+  for (const r of reps){
+    const row = [r.n, new Date(r.at).toISOString(), num(r.t0, 2), num(r.t1, 2), r.dir || "", r.side, r.errors.length ? "no" : "yes"];
+    for (const k of keys){
+      const st = r.errors.includes(k) ? "bad" : r.measured.includes(k) ? "ok" : "na";
+      row.push(st, r.R[k] ? fmt(r.R[k])[1] : "");
+    }
+    rows.push(row.map(csvCell).join(","));
+  }
+  downloadText(`tendu-results-${stampNow()}.csv`, rows.join("\n"), "text/csv");
+});
+
+// ---------- history (long-term trend) ----------
+const HKEY = "tendu-history";
+const RATE_KEYS = ["workKnee", "supportKnee", "hips", ...REP];
+function loadHistory(){ try { return JSON.parse(localStorage.getItem(HKEY)) || []; } catch { return []; } }
+function sessionSummary(){
+  const dirs = {}, fails = {}, meas = {};
+  for (const r of reps){
+    const k = r.dir || "unknown";
+    dirs[k] = dirs[k] || [0, 0]; dirs[k][0]++; if (!r.errors.length) dirs[k][1]++;
+    for (const e of r.errors) fails[e] = (fails[e] || 0) + 1;
+    for (const m of r.measured) meas[m] = (meas[m] || 0) + 1;
+  }
+  return { id: sessionId, start: sessionStart, end: reps.length ? reps[reps.length - 1].at : null,
+           total: reps.length, good: reps.filter(r => !r.errors.length).length, dirs, fails, meas };
+}
+function saveHistory(){
+  if (!reps.length) return;
+  const h = loadHistory().filter(s => s.id !== sessionId);
+  h.push(sessionSummary());
+  h.sort((a, b) => a.start - b.start);
+  try { localStorage.setItem(HKEY, JSON.stringify(h.slice(-200))); } catch {}
+}
+
+// ---------- report ----------
+const locale = () => lang === "zh" ? "zh-CN" : "en-US";
+const fTime = ts => new Date(ts).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" });
+const fDate = ts => new Date(ts).toLocaleDateString(locale(), { year: "numeric", month: "long", day: "numeric" });
+const fShort = ts => new Date(ts).toLocaleDateString(locale(), { month: "numeric", day: "numeric" });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+// ctx = { reps, sid, start, hist, cloud }; without ctx the current session is reported
+let reportCtx = null;
+async function openReport(ctx){
+  if (!ctx){
+    if (!reps.length){ setStatus("noRepsForReport"); return; }
+    saveHistory();
+    const useCloud = cloudReady() && sessionDancer === cloud.dancerId;
+    ctx = { reps, sid: sessionId, start: sessionStart || reps[0].at, cloud: useCloud, hist: useCloud ? await cloudHistory() : loadHistory() };
+  }
+  reportCtx = ctx;
+  renderReport(ctx);
+  document.body.classList.add("show-report");
+  window.scrollTo(0, 0);
+}
+$("reportBtn").addEventListener("click", () => openReport());
+
+function trendSVG(hs, sid){
+  const Wd = 640, Ht = 220, L = 44, R = 24, T = 18, B = 34, iw = Wd - L - R, ih = Ht - T - B;
+  const x = i => L + (hs.length === 1 ? iw / 2 : i * iw / (hs.length - 1));
+  const y = v => T + (1 - v) * ih;
+  let s = `<svg viewBox="0 0 ${Wd} ${Ht}" role="img" aria-label="${esc(t("trendChart"))}">`;
+  for (const g of [0, 0.5, 1]){
+    s += `<line x1="${L}" x2="${Wd - R}" y1="${y(g)}" y2="${y(g)}" style="stroke:var(--line)" stroke-width="1"/>`;
+    s += `<text x="${L - 8}" y="${y(g) + 4}" text-anchor="end" font-size="11" style="fill:var(--muted)">${g * 100}%</text>`;
+  }
+  const rate = h => h.total ? h.good / h.total : 0;
+  s += `<path d="${hs.map((h, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(rate(h)).toFixed(1)).join(" ")}" fill="none" style="stroke:var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const every = hs.length > 8 ? 2 : 1;
+  hs.forEach((h, i) => {
+    const cur = h.id === sid;
+    s += `<circle cx="${x(i)}" cy="${y(rate(h))}" r="${cur ? 5 : 4}" style="fill:var(--accent);stroke:var(--surface)" stroke-width="2"><title>${esc(fDate(h.start))}: ${Math.round(rate(h) * 100)}% (${h.good}/${h.total})</title></circle>`;
+    if (i % every === 0 || i === hs.length - 1)
+      s += `<text x="${x(i)}" y="${Ht - 10}" text-anchor="middle" font-size="11" style="fill:var(--muted)">${esc(cur ? t("thisSession") : fShort(h.start))}</text>`;
+  });
+  const li = hs.length - 1;
+  s += `<text x="${x(li)}" y="${y(rate(hs[li])) - 10}" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--fg)">${Math.round(rate(hs[li]) * 100)}%</text>`;
+  return s + "</svg>";
+}
+
+function renderReport(ctx = reportCtx){
+  if (!ctx) return;
+  const reps = ctx.reps, sessionId = ctx.sid, sessionStart = ctx.start;
+  const n = reps.length, good = reps.filter(r => !r.errors.length).length;
+  const P = v => Math.round(v * 100) + "%";
+  const start = sessionStart || reps[0].at, end = reps[n - 1].at;
+  const lc = reps.filter(r => r.side === "left").length;
+  const dirName = d => d ? DIRS[d] : t("dirUnknown");
+  let h = `<div class="rp-bar no-print"><button id="rpBack">${esc(t("rpBack"))}</button><button class="primary" id="rpPrint">${esc(t("rpPrint"))}</button></div>`;
+  h += `<article class="rp"><h1>${esc(t("rpTitle"))}</h1>`;
+  h += `<p class="sub">${esc(fDate(start))} · ${esc(fTime(start))}–${esc(fTime(end))} · ${esc(t("minutes", Math.max(1, Math.round((end - start) / 60000))))} · ${esc(t("legsLine", lc, n - lc))}</p>`;
+
+  // 1. summary
+  h += `<h2>${esc(t("rpSummary"))}</h2><div class="rp-tiles">`;
+  h += `<div class="tile"><div class="k">${esc(t("tTotal"))}</div><div class="v">${n}</div></div>`;
+  h += `<div class="tile"><div class="k">${esc(t("tGood"))}</div><div class="v">${good}<small>${P(good / n)}</small></div></div>`;
+  for (const d of ["devant", "seconde", "derriere"]){
+    const rs = reps.filter(r => r.dir === d);
+    if (!rs.length) continue;
+    const g = rs.filter(r => !r.errors.length).length;
+    h += `<div class="tile"><div class="k">${esc(DIRS[d])}</div><div class="v">${P(g / rs.length)}<small>${esc(t("dirTile", rs.length, g))}</small></div></div>`;
+  }
+  h += `</div>`;
+
+  // 2. what to work on
+  const stats = RATE_KEYS.map(k => {
+    const meas = reps.filter(r => r.measured.includes(k)).length;
+    const fails = reps.filter(r => r.errors.includes(k)).length;
+    return { k, meas, fails, rate: meas ? (meas - fails) / meas : null };
+  });
+  const top = stats.filter(s => s.fails > 0).sort((a, b) => b.fails / b.meas - a.fails / a.meas).slice(0, 3);
+  h += `<h2>${esc(t("rpFocus"))}</h2>`;
+  if (!top.length) h += `<div class="good-msg">✓ ${esc(t("rpAllGood"))}</div>`;
+  else {
+    h += `<div class="focus">`;
+    for (const s of top) h += `<div class="item"><b>${esc(t("n_" + s.k))}</b><span class="cnt">${esc(t("failCount", s.fails, s.meas, P(s.fails / s.meas)))}</span><p>${esc(t("t_" + s.k))}</p></div>`;
+    h += `</div>`;
+  }
+
+  // 3. pass rate per check
+  h += `<h2>${esc(t("rpRates"))}</h2><div class="rates">`;
+  for (const s of stats){
+    const low = s.rate != null && s.rate < 0.7;
+    h += `<div>${esc(t("n_" + s.k))}</div><div class="bar"><span style="width:${s.rate == null ? 0 : s.rate * 100}%"></span></div>`;
+    h += `<div class="pct${low ? " low" : ""}">${s.rate == null ? esc(t("notMeasured")) : P(s.rate) + (low ? " · " + esc(t("needWork")) : "")}</div>`;
+  }
+  h += `</div>`;
+
+  // 4. long-term trend
+  const hist = ctx.hist || [];
+  h += `<h2>${esc(t("rpTrend"))}</h2><div class="trend">`;
+  if (hist.length < 2) h += `<p class="note-sm">${esc(t("trendNeedMore"))}</p>`;
+  else {
+    const hs = hist.slice(-12);
+    h += `<p class="cap">${esc(t("trendChart"))}</p>${trendSVG(hs, sessionId)}`;
+    const cols = hist.slice(-8);
+    h += `<div class="heat-wrap"><p class="cap">${esc(t("trendTable"))}</p><table class="heat"><tr><th></th>`;
+    for (const c of cols) h += `<th>${esc(c.id === sessionId ? t("thisSession") : fShort(c.start))}</th>`;
+    h += `</tr>`;
+    for (const k of RATE_KEYS){
+      h += `<tr><td>${esc(t("n_" + k))}</td>`;
+      for (const c of cols){
+        const m = (c.meas || {})[k] || 0, f = (c.fails || {})[k] || 0;
+        if (!m){ h += `<td style="color:var(--muted)">—</td>`; continue; }
+        const r = (m - f) / m;
+        h += `<td style="background:color-mix(in srgb, var(--accent) ${Math.round(8 + r * 50)}%, var(--surface))">${P(r)}</td>`;
+      }
+      h += `</tr>`;
+    }
+    h += `</table></div>`;
+  }
+  h += ctx.cloud ? `<p class="note-sm">${esc(t("cloudHistoryNote"))}</p></div>`
+                 : `<p class="note-sm">${esc(t("historyNote"))} <button class="no-print" id="rpClear" style="padding:2px 8px;font-size:12px">${esc(t("clearHistory"))}</button></p></div>`;
+
+  // 5. every tendu with keyframes
+  const CAP = 40, shown = reps.slice(-CAP);
+  h += `<h2>${esc(t("rpDetail"))}</h2>`;
+  if (n > CAP) h += `<p class="note-sm">${esc(t("detailCap", CAP))}</p>`;
+  shown.forEach((r, i) => {
+    const ok = !r.errors.length;
+    h += `<div class="rp-rep"><div class="hd"><span>${esc(t("repHead", r.n, dirName(r.dir), t(r.side), fTime(r.at)))}</span>`;
+    h += `<span class="${ok ? "ok" : "bad"}">${ok ? "✓ " + esc(t("allPassed")) : "✗ " + r.errors.length}</span></div>`;
+    if (r.snaps.start || r.snaps.far || r.snaps.close){
+      h += `<div class="snaps">`;
+      for (const [key, cap] of [["start", "snapStart"], ["far", "snapFar"], ["close", "snapClose"]])
+        h += `<figure>${r.snaps[key] ? `<img src="${r.snaps[key]}" alt="${esc(t(cap))}">` : ""}<figcaption>${esc(t(cap))}</figcaption></figure>`;
+      h += `</div>`;
+    }
+    h += `<div class="timeline" data-rep="${shown.length - 1 - i}"></div>`;
+    if (!ok){
+      h += `<ul>`;
+      for (const k of r.errors) h += `<li>${esc(t("n_" + k))}${r.R[k] ? `<span class="v">${esc(fmt(r.R[k])[1])}</span>` : ""}</li>`;
+      h += `</ul>`;
+    }
+    h += `</div>`;
+  });
+  h += `<div class="rp-foot">${esc(t("generated", new Date().toLocaleString(locale())))} · ${esc(t("title"))}</div></article>`;
+
+  const el = $("report"); el.innerHTML = h;
+  el.querySelectorAll(".timeline[data-rep]").forEach(tl => { const r = shown[shown.length - 1 - +tl.dataset.rep]; fillTimeline(tl, r.segs, r.peak); });
+  $("rpBack").addEventListener("click", () => document.body.classList.remove("show-report"));
+  $("rpPrint").addEventListener("click", () => window.print());
+  if ($("rpClear")) $("rpClear").addEventListener("click", () => {
+    if (!confirm(t("confirmClear"))) return;
+    try { localStorage.removeItem(HKEY); } catch {}
+    saveHistory(); ctx.hist = loadHistory(); renderReport(ctx);
+  });
+}
+
+// ---------- cloud: accounts, dancers, sync (Supabase) ----------
+// Turned on when config.js has a Supabase URL and anon key; otherwise the app runs device-only.
+// Each family signs in with an email code; row-level security keeps every family's data private.
+// Synced per tendu: the judged results, three keyframe JPEGs (private bucket) and leg coordinates.
+// Videos are never uploaded.
+const SUPA_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
+const CONF = window.BALLET_CONFIG || {};
+const cloud = { enabled: !!(CONF.supabaseUrl && CONF.supabaseAnonKey), sb: null, user: null, dancers: [], dancerId: null,
+                queue: [], busy: false, errored: false };
+const cloudReady = () => !!(cloud.enabled && cloud.sb && cloud.user && cloud.dancerId);
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const iso = ts => new Date(ts).toISOString();
+function uuid(){
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16); });
+}
+function loadScript(src){
+  return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = () => rej(new Error("network")); document.head.appendChild(el); });
+}
+let acctMsg = null;
+function setAcctMsg(key, arg){ acctMsg = key ? [key, arg] : null; $("acctMsg").textContent = key ? t(key, arg) : ""; }
+
+async function cloudInit(){
+  if (!cloud.enabled) return;
+  $("acctCard").hidden = false;
+  try { if (!window.supabase) await loadScript(SUPA_JS); }
+  catch(e){ setAcctMsg("authErr", e.message); return; }
+  cloud.sb = window.supabase.createClient(CONF.supabaseUrl, CONF.supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } });
+  // run Supabase calls outside the auth callback (calling it from inside can deadlock)
+  cloud.sb.auth.onAuthStateChange((_ev, session) => setTimeout(() => onUser(session ? session.user : null), 0));
+}
+async function onUser(user){
+  const changed = (user && user.id) !== (cloud.user && cloud.user.id);
+  cloud.user = user;
+  if (!user){ cloud.dancers = []; cloud.dancerId = null; renderAcct(); loadHistoryList(); return; }
+  if (changed) await loadDancers(); else renderAcct();
+}
+async function loadDancers(){
+  const { data, error } = await cloud.sb.from("dancers").select("id,name").order("created_at");
+  if (error){ setAcctMsg("authErr", error.message); return; }
+  cloud.dancers = data || [];
+  const saved = lsGet("ballet-dancer");
+  cloud.dancerId = (cloud.dancers.find(d => d.id === saved) || cloud.dancers[0] || {}).id || null;
+  renderAcct(); loadHistoryList(); flushSoon();
+}
+function renderAcct(){
+  if (!cloud.enabled) return;
+  const inn = !!cloud.user;
+  $("acctOut").hidden = inn; $("acctIn").hidden = !inn;
+  if (inn){
+    $("whoami").textContent = t("signedInAs", cloud.user.email || "");
+    const sel = $("dancerSel"); sel.innerHTML = "";
+    for (const d of cloud.dancers){ const o = document.createElement("option"); o.value = d.id; o.textContent = d.name; sel.appendChild(o); }
+    sel.value = cloud.dancerId || ""; sel.disabled = !cloud.dancers.length;
+    if (!cloud.dancers.length) setAcctMsg("needDancer");
+    else if (acctMsg && acctMsg[0] === "needDancer") setAcctMsg(null);
+  }
+  if (acctMsg) $("acctMsg").textContent = t(acctMsg[0], acctMsg[1]);
+  renderSync();
+}
+function renderSync(){
+  const el = $("syncState");
+  el.className = "";
+  if (!cloudReady()){ el.textContent = ""; return; }
+  if (cloud.errored){ el.textContent = t("syncErr"); el.className = "err"; }
+  else if (cloud.queue.length) el.textContent = t("syncPending", cloud.queue.length);
+  else { el.textContent = t("syncOk"); el.className = "ok"; }
+}
+
+$("sendCode").addEventListener("click", async () => {
+  const email = $("email").value.trim();
+  if (!email || !cloud.sb) return;
+  $("sendCode").disabled = true;
+  const { error } = await cloud.sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  $("sendCode").disabled = false;
+  if (error){ setAcctMsg("authErr", error.message); return; }
+  $("codeRow").hidden = false; $("code").focus();
+  setAcctMsg("codeSent", email);
+});
+$("verifyCode").addEventListener("click", async () => {
+  const email = $("email").value.trim(), token = $("code").value.trim();
+  if (!email || !token) return;
+  const { error } = await cloud.sb.auth.verifyOtp({ email, token, type: "email" });
+  if (error){ setAcctMsg("authErr", error.message); return; }
+  setAcctMsg(null); $("code").value = ""; $("codeRow").hidden = true;
+});
+$("signOut").addEventListener("click", async () => { await cloud.sb.auth.signOut(); });
+$("addDancer").addEventListener("click", async () => {
+  const name = $("dancerName").value.trim();
+  if (!name) return;
+  const { data, error } = await cloud.sb.from("dancers").insert({ name }).select("id,name").single();
+  if (error){ setAcctMsg("authErr", error.message); return; }
+  $("dancerName").value = "";
+  cloud.dancers.push(data);
+  switchDancer(data.id);
+});
+$("dancerSel").addEventListener("change", e => switchDancer(e.target.value));
+function switchDancer(id){
+  if (id === cloud.dancerId){ renderAcct(); return; }
+  if (reps.length) newSession();              // a session belongs to one dancer
+  cloud.dancerId = id; lsSet("ballet-dancer", id);
+  renderAcct(); loadHistoryList(); flushSoon();
+}
+
+// --- per-tendu leg coordinates (shoulders, hips, knees, ankles, heels, toes) ---
+const COORD_IDX = [11, 12, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32];
+function repCoords(n){
+  const fs = frames.filter(f => f.src === srcId && f.rep === n);
+  if (!fs.length) return null;
+  const r4 = v => Math.round(v * 1e4) / 1e4;
+  return {
+    points: COORD_IDX.map(i => LM_NAMES[i]),
+    t: fs.map(f => Math.round(f.t * 1000) / 1000),
+    phase: fs.map(f => f.ph == null ? null : PH_CODE[f.ph]),
+    img: fs.map(f => COORD_IDX.flatMap(i => [r4(f.img[i*3]), r4(f.img[i*3+1]), r4(f.img[i*3+2])])),       // x, y (0-1), visibility
+    world: fs[0].world ? fs.map(f => COORD_IDX.flatMap(i => [r4(f.world[i*3]), r4(f.world[i*3+1]), r4(f.world[i*3+2])])) : null, // metres
+  };
+}
+
+// --- upload queue (runs in order; retries every 30 s on failure) ---
+function enqueueRep(rec){
+  if (!cloudReady() || sessionDancer !== cloud.dancerId) return;
+  rec.dancerId = cloud.dancerId;
+  cloud.queue.push({ kind: "rep", rec });
+  renderSync(); flushSoon();
+}
+function cloudSummary(){
+  if (!cloudReady() || !reps.length || !sessionDancer) return;
+  cloud.queue.push({ kind: "summary", s: { ...sessionSummary(), dancerId: sessionDancer } });
+  renderSync(); flushSoon();
+}
+let flushTimer = 0;
+function flushSoon(ms = 400){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, ms); }
+async function flush(){
+  if (cloud.busy || !cloud.sb || !cloud.user || !cloud.queue.length) return;
+  cloud.busy = true;
+  let summaries = 0;
+  try {
+    while (cloud.queue.length){
+      const item = cloud.queue[0];
+      if (item.kind === "rep"){
+        await uploadRep(item.rec);
+        if (item.rec.sessionKey === sessionId) await uploadSummary({ ...sessionSummary(), dancerId: item.rec.dancerId });
+      } else { await uploadSummary(item.s); summaries++; }
+      cloud.queue.shift(); renderSync();
+    }
+    cloud.errored = false;
+  } catch(e){
+    console.warn("sync failed", e);
+    cloud.errored = true; flushSoon(30000);
+  }
+  cloud.busy = false; renderSync();
+  if (summaries) loadHistoryList();
+}
+function dataURLtoBlob(u){
+  const [head, b64] = u.split(","), bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: head.slice(5, head.indexOf(";")) });
+}
+async function uploadSummary(s){
+  const { error } = await cloud.sb.from("sessions").upsert({
+    id: s.id, dancer_id: s.dancerId, started_at: iso(s.start), ended_at: s.end ? iso(s.end) : null,
+    total: s.total, good: s.good, summary: { dirs: s.dirs, fails: s.fails, meas: s.meas } }, { onConflict: "id" });
+  if (error) throw error;
+}
+async function uploadRep(rec){
+  const sb = cloud.sb;
+  // make sure the session row exists before the tendu that points at it
+  let { error } = await sb.from("sessions").upsert(
+    { id: rec.sessionKey, dancer_id: rec.dancerId, started_at: iso(rec.sessionStart || rec.at) }, { onConflict: "id", ignoreDuplicates: true });
+  if (error) throw error;
+  const keyframes = {};
+  for (const k of ["start", "far", "close"]){
+    if (!rec.snaps[k] || !rec.snaps[k].startsWith("data:")) continue;
+    const path = `${cloud.user.id}/${rec.sessionKey}/${rec.id}-${k}.jpg`;
+    ({ error } = await sb.storage.from("keyframes").upload(path, dataURLtoBlob(rec.snaps[k]), { contentType: "image/jpeg", upsert: true }));
+    if (error) throw error;
+    keyframes[k] = path;
+  }
+  ({ error } = await sb.from("reps").upsert({
+    id: rec.id, session_id: rec.sessionKey, dancer_id: rec.dancerId, n: rec.n, at: iso(rec.at),
+    direction: rec.dir, side: rec.side, all_correct: !rec.errors.length, errors: rec.errors, measured: rec.measured,
+    results: rec.R, segs: rec.segs, peak: rec.peak, keyframes, coords: rec.coords }, { onConflict: "id" }));
+  if (error) throw error;
+}
+
+// --- history from the cloud ---
+async function cloudHistory(){
+  const { data, error } = await cloud.sb.from("sessions").select("id,started_at,ended_at,total,good,summary")
+    .eq("dancer_id", cloud.dancerId).order("started_at", { ascending: true }).limit(200);
+  if (error){ console.warn(error); return loadHistory(); }
+  const hs = (data || []).filter(r => r.total > 0).map(r => ({ id: r.id, start: Date.parse(r.started_at), end: r.ended_at ? Date.parse(r.ended_at) : null,
+    total: r.total, good: r.good, ...(r.summary || {}) }));
+  if (reps.length && sessionDancer === cloud.dancerId){                 // include the session in progress
+    const cur = sessionSummary(), i = hs.findIndex(h => h.id === cur.id);
+    if (i >= 0) hs[i] = cur; else hs.push(cur);
+  }
+  return hs;
+}
+let histCache = [], histLoading = false;
+async function loadHistoryList(){
+  if (!cloudReady()){ $("histCard").hidden = true; return; }
+  $("histCard").hidden = false;
+  histLoading = true; renderHistList();
+  const hs = await cloudHistory();
+  histCache = hs.filter(h => h.id !== sessionId).reverse().slice(0, 20);
+  histLoading = false; renderHistList();
+}
+function renderHistList(){
+  const ul = $("histList"); if (!ul) return;
+  ul.innerHTML = "";
+  const msg = histLoading ? t("loadingHist") : !histCache.length ? t("historyEmpty") : null;
+  if (msg){ const li = document.createElement("li"); li.className = "empty"; li.textContent = msg; ul.appendChild(li); return; }
+  for (const h of histCache){
+    const li = document.createElement("li");
+    const info = document.createElement("div"); info.className = "info";
+    info.textContent = `${fDate(h.start)} ${fTime(h.start)}`;
+    const sm = document.createElement("small"); sm.textContent = t("sessionRow", h.total, h.good); info.appendChild(sm);
+    const b = document.createElement("button"); b.textContent = t("viewReport");
+    b.addEventListener("click", () => openPastReport(h, b));
+    li.append(info, b); ul.appendChild(li);
+  }
+}
+async function openPastReport(h, btn){
+  btn.disabled = true;
+  try {
+    const { data, error } = await cloud.sb.from("reps").select("*").eq("session_id", h.id).order("n");
+    if (error) throw error;
+    const paths = (data || []).flatMap(r => Object.values(r.keyframes || {}));
+    const urls = {};
+    if (paths.length){
+      const { data: su, error: e2 } = await cloud.sb.storage.from("keyframes").createSignedUrls(paths, 3600);
+      if (e2) throw e2;
+      (su || []).forEach(x => { if (x.signedUrl) urls[x.path] = x.signedUrl; });
+    }
+    const kf = (r, k) => (r.keyframes && urls[r.keyframes[k]]) || null;
+    const list = (data || []).map(r => ({ n: r.n, side: r.side, dir: r.direction, errors: r.errors || [], R: r.results || {},
+      segs: r.segs, peak: r.peak || 0, measured: r.measured || [], at: Date.parse(r.at),
+      snaps: { start: kf(r, "start"), far: kf(r, "far"), close: kf(r, "close") } }));
+    if (!list.length){ setAcctMsg("historyEmpty"); return; }
+    await openReport({ reps: list, sid: h.id, start: h.start, cloud: true, hist: await cloudHistory() });
+  } catch(e){ setAcctMsg("authErr", e.message || String(e)); }
+  finally { btn.disabled = false; }
+}
+
+// ---------- voice ----------
+const badSince = {}, lastSpoke = {}; let lastAny = 0;
+function say(text, force){
+  if (!cfg.voice || !("speechSynthesis" in window)) return;
+  const now = performance.now();
+  if (!force && now - lastAny < 1800) return;
+  const u = new SpeechSynthesisUtterance(text); u.lang = lang === "zh" ? "zh-CN" : "en-US"; u.rate = 1.05;
+  speechSynthesis.cancel(); speechSynthesis.speak(u); lastAny = now;
+}
+function voice(out){
+  const now = performance.now();
+  for (const k of LIVE){
+    if (k === "toe") continue;                 // floor contact is reported per rep
+    if (out[k][0] !== "bad"){ badSince[k] = 0; continue; }
+    if (!badSince[k]) badSince[k] = now;
+    if (now - badSince[k] > 500 && now - (lastSpoke[k] || 0) > 4000 && now - lastAny > 1800){
+      say(t("c_" + k)); lastSpoke[k] = now; return;
+    }
+  }
+}
+
+applyLang();
+cloudInit();
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
