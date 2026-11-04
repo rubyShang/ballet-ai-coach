@@ -143,6 +143,51 @@ button.link:disabled{color:var(--muted)}
 .d-tw2{animation-delay:.8s}.d-tw3{animation-delay:1.6s}
 @keyframes twinkle{50%{opacity:.35;transform:scale(.75)}}
 @media (prefers-reduced-motion:reduce){.d-bob,.d-tw,.gate-dots i{animation:none}}
+/* ---------- learn page ---------- */
+#learn{display:none}
+body.view-learn #learn{display:block}
+body.view-learn > main{display:none}
+body.view-learn > header > p{display:none}
+body.show-gate #learn, body.show-report #learn{display:none!important}
+header .tabs{display:flex;gap:4px;background:var(--tint);border-radius:999px;padding:4px;align-self:center}
+header .tabs button{border:0;background:none;padding:6px 16px;font-weight:700;color:var(--muted)}
+header .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px rgba(74,42,58,.12)}
+.learn-wrap{max-width:1000px;margin:0 auto;display:grid;gap:16px}
+.learn-intro h2{font-size:24px;margin:0 0 4px;color:var(--accent);display:block}
+.learn-intro p{margin:0;color:var(--muted);max-width:60ch}
+.dir-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.dir-tabs button{padding:8px 18px;font-weight:700}
+.dir-tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.learn-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.learn-grid{grid-template-columns:1fr}}
+.anim-card{position:relative}
+.view-badge{position:absolute;left:14px;top:14px;font-size:12px;font-weight:700;color:var(--muted);background:var(--tint);border-radius:999px;padding:2px 10px}
+.anim-stage svg{width:100%;max-width:400px;height:auto;display:block;margin:0 auto}
+.phase-track{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.phase-track span{padding:4px 14px;border-radius:999px;font-size:13px;font-weight:700;background:var(--tint);color:var(--muted);transition:background .2s,color .2s}
+.phase-track span.on{color:#fff;background:var(--c)}
+.anim-caption{text-align:center;font-family:var(--display);font-size:19px;margin:10px 0 8px;min-height:1.5em}
+.anim-ctl{display:flex;justify-content:center}
+.learn-wrap h3{font-family:var(--display);font-weight:600;font-size:19px;margin:8px 0 0}
+.card h3{margin:0 0 12px}
+.tips-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.tips-list li{padding-left:30px;position:relative}
+.tips-list li::before{content:"✓";position:absolute;left:0;top:1px;width:21px;height:21px;border-radius:50%;background:var(--ok);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media (max-width:760px){.steps{grid-template-columns:repeat(5,150px);overflow-x:auto;padding-bottom:6px}}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;text-align:center}
+.step svg{width:100%;height:auto;display:block}
+.step .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:13px;margin-top:2px}
+.step p{margin:6px 0 0;font-size:13px}
+.mistakes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.mistake{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mistake figure{margin:0;text-align:center}
+.mistake svg{width:100%;height:auto;display:block}
+.mistake figcaption{font-size:14px;font-weight:700}
+.mistake .bad{color:var(--bad)}
+.mistake .good{color:var(--ok)}
+.learn-cta{display:flex;justify-content:center;padding:8px 0 28px}
+.learn-cta button{max-width:360px}
 .exports{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .exports button{padding:4px 10px;font-size:12px}
 .exports small{flex-basis:100%;color:var(--muted);font-size:12px}
@@ -248,6 +293,24 @@ body.show-report #report{display:block}
     <circle class="d-tw d-tw3" cx="62" cy="34" r="3" fill="#ffc85c"/>
     <circle class="d-tw d-tw1" cx="214" cy="86" r="2.5" fill="#ffc85c"/>
   </symbol>
+  <symbol id="dancerTop" viewBox="0 0 240 262">
+    <path d="M58 150 Q66 138 80 141 Q90 132 104 137 Q120 128 136 137 Q150 132 160 141 Q174 138 182 150 Q174 162 160 158 Q150 166 136 161 Q120 169 104 161 Q90 166 80 158 Q66 162 58 150 Z" fill="#ffc2da"/>
+    <path d="M70 146 Q80 136 96 140 Q108 132 120 137 Q132 132 144 140 Q160 136 170 146 Q160 156 144 153 Q132 159 120 154 Q108 159 96 153 Q80 156 70 146 Z" fill="#ffe0ec"/>
+    <path d="M104 104 Q120 98 136 104 L134 142 Q120 147 106 142 Z" fill="#f47aa8"/>
+    <path d="M106 112 Q120 118 134 112" stroke="#ffd2df" stroke-width="2" fill="none"/>
+    <path d="M106 108 C92 110 76 116 60 126" stroke="#ffe1d3" stroke-width="7.5" stroke-linecap="round" fill="none"/>
+    <path d="M134 108 C148 110 164 116 180 126" stroke="#ffe1d3" stroke-width="7.5" stroke-linecap="round" fill="none"/>
+    <rect x="115" y="92" width="10" height="12" rx="4" fill="#ffe1d3"/>
+    <circle cx="120" cy="76" r="23" fill="#ffe8dc"/>
+    <path d="M97 74 Q98 52 120 52 Q142 52 143 74 Q136 62 120 62 Q104 62 97 74 Z" fill="#7a4a35"/>
+    <circle cx="120" cy="48" r="10" fill="#7a4a35"/>
+    <path d="M108 44 L100 38 L101 50 Z M132 44 L140 38 L139 50 Z" fill="#ff8fb8"/>
+    <circle cx="120" cy="44" r="3" fill="#ff8fb8"/>
+    <path d="M107 79 Q111 75 115 79 M125 79 Q129 75 133 79" stroke="#5a3344" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <circle cx="105" cy="86" r="4.5" fill="#ff9fc0" opacity=".55"/>
+    <circle cx="135" cy="86" r="4.5" fill="#ff9fc0" opacity=".55"/>
+    <path d="M115 88 Q120 93 125 88" stroke="#d2557f" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </symbol>
 </svg>
 
 <section id="gate">
@@ -276,6 +339,7 @@ body.show-report #report{display:block}
 
 <header>
   <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer"/></svg><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
+  <nav class="tabs" aria-label="view"><button data-view="learn" data-i="navLearn"></button><button data-view="practice" data-i="navPractice"></button></nav>
   <p data-i="subtitle"></p>
   <div class="lang" role="group" aria-label="Language">
     <button id="lang-zh" data-lang="zh">中文</button>
@@ -446,6 +510,30 @@ body.show-report #report{display:block}
   </aside>
 </main>
 
+<section id="learn">
+  <div class="learn-wrap">
+    <div class="learn-intro"><h2 data-i="lTitle"></h2><p data-i="lIntro"></p></div>
+    <div class="dir-tabs" role="tablist">
+      <button role="tab" data-dir="devant"></button><button role="tab" data-dir="seconde"></button><button role="tab" data-dir="derriere"></button>
+    </div>
+    <div class="learn-grid">
+      <div class="card anim-card">
+        <span class="view-badge" id="viewBadge"></span>
+        <div class="anim-stage" id="animStage"></div>
+        <div class="phase-track" id="phaseTrack"></div>
+        <div class="anim-caption" id="animCaption"></div>
+        <div class="anim-ctl"><button id="animToggle"></button></div>
+      </div>
+      <div class="card"><h3 data-i="lTips"></h3><ul class="tips-list" id="tipsList"></ul></div>
+    </div>
+    <h3 data-i="lSteps"></h3>
+    <div class="steps" id="stepsRow"></div>
+    <h3 data-i="lMistakes"></h3>
+    <div class="mistakes" id="mistakesGrid"></div>
+    <div class="learn-cta"><button class="primary wide" id="goPractice" data-i="goPractice"></button></div>
+  </div>
+</section>
+
 <section id="report"></section>
 
 <script type="module">
@@ -526,6 +614,19 @@ const I18N = {
     recUnsupported:"这个浏览器不支持录制，请用电脑版 Chrome 或 Edge。", recFail:m=>"无法录制：" + m,
     recDone:"录好了，在右边「录像」里可以保存或重新分析。",
     leaveWarn:"还有没保存的录像或没上传完的数据，关掉页面会丢失。",
+    navLearn:"学一学", navPractice:"练一练",
+    lTitle:"Tendu 擦地", lIntro:"脚沿着地板擦出去，脚背慢慢绷直，再原路收回来。先看小舞者怎么做，再去练一练吧！",
+    dir_devant:"向前 devant", dir_seconde:"向旁 à la seconde", dir_derriere:"向后 derrière",
+    viewSide:"侧面看", viewFront:"正面看", lFront:"前 →",
+    l_closed:"准备", l_out:"擦出去", l_hold:"停一下", l_back:"收回来", lPlay:"▶ 播放", lPause:"❚❚ 暂停",
+    lTips:"小提醒", lSteps:"分解动作", lMistakes:"常见错误", goPractice:"我学会了，去练一练",
+    tip_knees:"两条腿的膝盖都要伸直", tip_floor:"脚尖一直贴着地板，不要抬起来",
+    tip_devant:"胯不要跟着腿往前走，身体保持正", tip_seconde:"两边胯一样高，不要顶胯", tip_derriere:"背挺直，不要往前弯腰",
+    s_devant_1:"五位站好，身体立直", s_devant_2:"脚跟往前推，全脚掌擦地向前", s_devant_3:"脚跟抬起，经过半脚尖", s_devant_4:"脚背绷直，只有脚尖点地", s_devant_5:"原路收回：半脚尖 → 脚跟落地 → 回到五位",
+    s_seconde_1:"一位站好，两边胯放平", s_seconde_2:"脚跟往前推，全脚掌向旁擦出", s_seconde_3:"脚跟抬起，经过半脚尖", s_seconde_4:"脚背绷直，脚尖点在旁边", s_seconde_5:"原路收回：半脚尖 → 脚跟落地 → 回到一位",
+    s_derriere_1:"五位站好，背挺直", s_derriere_2:"脚尖领先，全脚掌向后擦出", s_derriere_3:"脚跟抬起，经过半脚尖", s_derriere_4:"脚背绷直，脚尖点地，身体不前倾", s_derriere_5:"脚跟领先收回：半脚尖 → 脚跟落地 → 回到五位",
+    m_bentKnee_bad:"膝盖弯了", m_bentKnee_good:"膝盖伸直", m_toeLift_bad:"脚离开地面", m_toeLift_good:"脚尖贴着地",
+    m_flatPoint_bad:"脚背没绷直", m_flatPoint_good:"脚背绷直", m_hipHike_bad:"胯顶起来了", m_hipHike_good:"两边胯一样高",
     gateSub:"AI 帮孩子检查芭蕾基本功，从 tendu 开始。",
     feat1:"摄像头实时检查膝盖、脚背和擦地路线", feat2:"每次练习自动生成报告，记录进步", feat3:"视频只留在你自己的设备上",
     gateEmailLabel:"家长邮箱", gateEmailNote:"第一次使用会自动注册，不需要密码。我们会把验证码发到你的邮箱。",
@@ -640,6 +741,19 @@ const I18N = {
     recUnsupported:"This browser can't record. Use Chrome or Edge on a computer.", recFail:m=>"Couldn't record: " + m,
     recDone:"Recording finished. Save it or analyze it again under Recordings.",
     leaveWarn:"You have unsaved recordings or data still uploading that will be lost.",
+    navLearn:"Learn", navPractice:"Practice",
+    lTitle:"Tendu", lIntro:"Brush the foot out along the floor, stretch it to a point, then bring it back the same way. Watch the little dancer first, then give it a try!",
+    dir_devant:"Front · devant", dir_seconde:"Side · à la seconde", dir_derriere:"Back · derrière",
+    viewSide:"Side view", viewFront:"Front view", lFront:"front →",
+    l_closed:"Ready", l_out:"Brush out", l_hold:"Hold", l_back:"Come back", lPlay:"▶ Play", lPause:"❚❚ Pause",
+    lTips:"Remember", lSteps:"Step by step", lMistakes:"Common mistakes", goPractice:"I've got it, let's practice",
+    tip_knees:"Keep both knees straight", tip_floor:"Keep the toes on the floor the whole time",
+    tip_devant:"Keep the hips square; don't let them follow the leg", tip_seconde:"Keep both hips level; don't hitch the working hip", tip_derriere:"Keep the back tall; don't tip forward",
+    s_devant_1:"Stand tall in fifth position", s_devant_2:"Heel forward, brush the whole foot along the floor", s_devant_3:"Lift the heel through demi-pointe", s_devant_4:"Point the foot; only the toe tips touch", s_devant_5:"Come back the same way: demi-pointe → heel down → fifth",
+    s_seconde_1:"Stand in first position, hips level", s_seconde_2:"Heel forward, brush the whole foot to the side", s_seconde_3:"Lift the heel through demi-pointe", s_seconde_4:"Point the foot out to the side", s_seconde_5:"Come back the same way: demi-pointe → heel down → first",
+    s_derriere_1:"Stand tall in fifth position", s_derriere_2:"Toes lead, brush the whole foot back", s_derriere_3:"Lift the heel through demi-pointe", s_derriere_4:"Point the foot; don't lean forward", s_derriere_5:"Heel leads back in: demi-pointe → heel down → fifth",
+    m_bentKnee_bad:"Knee is bent", m_bentKnee_good:"Knee straight", m_toeLift_bad:"Foot off the floor", m_toeLift_good:"Toes on the floor",
+    m_flatPoint_bad:"Foot not pointed", m_flatPoint_good:"Foot pointed", m_hipHike_bad:"Hip hitched up", m_hipHike_good:"Hips level",
     gateSub:"AI feedback on ballet technique, starting with tendu.",
     feat1:"Live camera checks for knees, feet and the brushing path", feat2:"A report after every practice, with progress over time", feat3:"Videos stay on your own device",
     gateEmailLabel:"Parent's email", gateEmailNote:"First time here? Your account is created automatically, with no password. We'll email you a sign-in code.",
@@ -763,6 +877,7 @@ function applyLang(){
   renderRecs(); updateRecUI(); updateFrameInfo();
   if (lastRep) showRep(lastRep);
   if (typeof renderAcct === "function"){ renderAcct(); renderHistList(); renderGate(); }
+  if (typeof renderLearn === "function" && document.body.classList.contains("view-learn")) renderLearn();
   if (document.body.classList.contains("show-report")) renderReport(reportCtx);
   if (lastDir !== undefined) $("dirChip").querySelector("span").textContent = lastDir ? DIRS[lastDir] : t("dirUnknown");
 }
@@ -1864,6 +1979,156 @@ async function openPastReport(h, btn){
   finally { btn.disabled = false; }
 }
 
+// ---------- learn: illustrated tendu guide ----------
+// Poses are computed, not hand-drawn per frame: the toe slides along the floor while the foot goes
+// flat → demi-pointe → pointed, using the same phases the camera analysis checks for.
+// devant / derrière are drawn from the side (front of the dancer = right), à la seconde from the front.
+const FL = 238, FOOT = 26;
+const VIEWS = {
+  devant:   { side: true,  d: 1,  work: [121, 146], stand: [118, 146], t0: 134, L: 70 },
+  seconde:  { side: false, d: 1,  work: [126, 146], stand: [113, 146], t0: 142, L: 66 },
+  derriere: { side: true,  d: -1, work: [119, 146], stand: [122, 146], t0: 106, L: 70 },
+};
+const rad = a => a * Math.PI / 180;
+const r1 = v => Math.round(v * 10) / 10;
+function footAt(v, e, err){
+  const d = v.d, hip = { x: v.work[0], y: v.work[1] };
+  const T = { x: v.t0 + d * e * v.L, y: err === "toeLift" ? FL - 15 : FL };
+  const stage = err === "flatPoint" && e > 0.6 ? 0.55 : e;           // a lazy foot stays in demi-pointe
+  let H, B = null;
+  if (stage < 0.3) H = { x: T.x - d * FOOT, y: T.y };
+  else if (stage < 0.65){
+    const a = rad((stage - 0.3) / 0.35 * 35);
+    B = { x: T.x - d * 7, y: T.y };
+    H = { x: B.x - d * (FOOT - 7) * Math.cos(a), y: T.y - (FOOT - 7) * Math.sin(a) };
+  } else {
+    const k = (stage - 0.65) / 0.35;
+    const legA = Math.atan2(T.y - hip.y, Math.abs(T.x - hip.x));          // leg line at this toe position
+    const a = rad(30) + k * (legA - rad(30));
+    H = { x: T.x - d * FOOT * Math.cos(a), y: T.y - FOOT * Math.sin(a) };
+    return { T, H, B, A: { x: H.x + (1 - k) * d * 4, y: H.y - (1 - k) * 9 }, ph: err === "toeLift" ? -1 : 2 };
+  }
+  const A = { x: H.x + d * 4, y: H.y - 9 };
+  const ph = err === "toeLift" ? -1 : stage < 0.3 ? 0 : stage < 0.65 ? 1 : 2;
+  return { T, H, B, A, ph };
+}
+function arrowSVG(x1, x2, y, color){
+  const dir = Math.sign(x2 - x1) || 1;
+  return `<path d="M${r1(x1)} ${y} L${r1(x2 - dir * 6)} ${y}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>` +
+         `<path d="M${r1(x2)} ${y} L${r1(x2 - dir * 9)} ${y - 6} L${r1(x2 - dir * 9)} ${y + 6} Z" fill="${color}"/>`;
+}
+// o: { err, arrow: "out"|"back", mark: "bad"|"good", focus: "knee"|"foot"|"hip", label: true }
+function poseSVG(dir, e, o = {}){
+  const v = VIEWS[dir], d = v.d, err = o.err;
+  const f = footAt(v, e, err);
+  const P = { x: v.work[0], y: v.work[1] - (err === "hipHike" ? 8 : 0) };
+  let K = { x: (P.x + f.A.x) / 2, y: (P.y + f.A.y) / 2 };
+  if (err === "bentKnee"){
+    const dx = f.A.x - P.x, dy = f.A.y - P.y, n = Math.hypot(dx, dy) || 1;
+    let px = dy / n, py = -dx / n;
+    if (py > 0){ px = -px; py = -py; }
+    K = { x: K.x + px * 19 + d * 5, y: K.y + py * 19 };
+  }
+  const SA = { x: v.stand[0] - 1, y: 227 };
+  const leg = (a, b, c) => `<path d="M${r1(a.x)} ${r1(a.y)} L${r1(b.x)} ${r1(b.y)} L${r1(c.x)} ${r1(c.y)}" stroke="#ffd2df" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  const vb = o.tight ? [22, 30, 202, 232] : [0, 0, 240, 262];
+  const s = [`<svg viewBox="${vb.join(" ")}" role="img" aria-label="${esc(o.alt || "tendu")}">`];
+  s.push(`<ellipse cx="120" cy="${FL + 5}" rx="84" ry="6" fill="#fdeaf2"/>`);
+  s.push(`<line x1="${v.t0}" y1="${FL + 1}" x2="${v.t0 + d * v.L}" y2="${FL + 1}" stroke="#f6bfd5" stroke-width="2" stroke-dasharray="3 5"/>`);
+  // standing leg and its turned-out foot
+  s.push(leg({ x: v.stand[0], y: v.stand[1] }, { x: (v.stand[0] + SA.x) / 2, y: (v.stand[1] + SA.y) / 2 }, SA));
+  s.push(v.side ? `<ellipse cx="${SA.x}" cy="${FL - 3}" rx="8" ry="5.5" fill="#f47aa8"/>`
+                : `<path d="M${SA.x + 2} ${FL - 2} L${SA.x - 22} ${FL - 1}" stroke="#f47aa8" stroke-width="9" stroke-linecap="round"/>`);
+  // working leg and foot
+  s.push(leg(P, K, f.A));
+  const fp = f.B ? `M${r1(f.H.x)} ${r1(f.H.y)} L${r1(f.B.x)} ${r1(f.B.y)} L${r1(f.T.x)} ${r1(f.T.y)}` : `M${r1(f.H.x)} ${r1(f.H.y)} L${r1(f.T.x)} ${r1(f.T.y)}`;
+  s.push(`<path d="${fp}" stroke="#f47aa8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`);
+  // upper body (tutu covers the hips)
+  s.push(`<g${err === "hipHike" ? ' transform="rotate(-6 120 150)"' : ""}><use href="#dancerTop"/></g>`);
+  if (o.arrow){
+    const out = o.arrow === "out", x1 = out ? v.t0 : v.t0 + d * v.L, x2 = out ? v.t0 + d * v.L : v.t0;
+    s.push(arrowSVG(x1, x2, 254, "#cf3577"));
+  }
+  if (o.label && v.side) s.push(`<text x="232" y="22" text-anchor="end" font-size="13" font-weight="700" fill="#b9a3ae">${esc(t("lFront"))}</text>`);
+  if (o.mark){
+    const c = o.focus === "knee" ? K : o.focus === "hip" ? P : o.focus === "heel" ? f.H : f.T;
+    const col = o.mark === "bad" ? "#dc3550" : "#239063";
+    s.push(`<circle cx="${r1(c.x)}" cy="${r1(c.y)}" r="17" fill="none" stroke="${col}" stroke-width="2.5" stroke-dasharray="5 4"/>`);
+    const bx = vb[0] + 16, by = vb[1] + 16;
+    s.push(`<circle cx="${bx}" cy="${by}" r="14" fill="${col}"/><text x="${bx}" y="${by + 6}" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">${o.mark === "bad" ? "✗" : "✓"}</text>`);
+  }
+  s.push(`</svg>`);
+  return { svg: s.join(""), ph: f.ph };
+}
+
+// --- page state ---
+let learnDir = "devant", animOn = !matchMedia("(prefers-reduced-motion: reduce)").matches, animT0 = performance.now(), animRaf = 0, animLast = 0;
+const CYCLE = 6.4;                                               // seconds for one tendu, out and back
+const ease = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+function animAt(sec){
+  const tt = sec % CYCLE;
+  if (tt < 0.7) return [0, "closed"];
+  if (tt < 2.7) return [ease((tt - 0.7) / 2), "out"];
+  if (tt < 3.7) return [1, "hold"];
+  if (tt < 5.7) return [1 - ease((tt - 3.7) / 2), "back"];
+  return [0, "closed"];
+}
+function drawAnim(e, stage){
+  const { svg, ph } = poseSVG(learnDir, e, { label: true, alt: t("lTitle") });
+  $("animStage").innerHTML = svg;
+  $("phaseTrack").querySelectorAll("span").forEach(sp => sp.classList.toggle("on", +sp.dataset.ph === ph && stage !== "closed"));
+  $("animCaption").textContent = t("l_" + stage) + (stage === "closed" ? "" : " · " + t(PHASES[ph][0]));
+}
+function animLoop(now){
+  if (!document.body.classList.contains("view-learn") || !animOn){ animRaf = 0; return; }
+  if (now - animLast > 33){ animLast = now; const [e, st] = animAt((now - animT0) / 1000); drawAnim(e, st); }
+  animRaf = requestAnimationFrame(animLoop);
+}
+function startAnim(){ if (animOn && !animRaf) animRaf = requestAnimationFrame(animLoop); }
+$("animToggle").addEventListener("click", () => {
+  animOn = !animOn;
+  if (animOn){ animT0 = performance.now(); startAnim(); } else drawAnim(1, "hold");
+  $("animToggle").textContent = t(animOn ? "lPause" : "lPlay");
+});
+
+const STEP_E = [0, 0.18, 0.5, 1, 0.18], STEP_ARROW = [null, "out", null, null, "back"];
+const MISTAKES = { devant: ["bentKnee", "toeLift", "flatPoint"], seconde: ["bentKnee", "hipHike", "toeLift", "flatPoint"], derriere: ["bentKnee", "toeLift", "flatPoint"] };
+const FOCUS = { bentKnee: "knee", toeLift: "foot", flatPoint: "heel", hipHike: "hip" };
+function renderLearn(){
+  document.querySelectorAll(".dir-tabs button").forEach(b => {
+    b.textContent = t("dir_" + b.dataset.dir);
+    b.setAttribute("aria-selected", String(b.dataset.dir === learnDir));
+  });
+  $("viewBadge").textContent = t(VIEWS[learnDir].side ? "viewSide" : "viewFront");
+  $("phaseTrack").innerHTML = [0, 1, 2].map(p => `<span data-ph="${p}" style="--c:var(${PHASES[p][1]})">${esc(t(PHASES[p][0]))}</span>`).join("");
+  $("animToggle").textContent = t(animOn ? "lPause" : "lPlay");
+  if (!animOn) drawAnim(1, "hold");
+  $("tipsList").innerHTML = ["tip_knees", "tip_floor", "tip_" + learnDir].map(k => `<li>${esc(t(k))}</li>`).join("");
+  $("stepsRow").innerHTML = STEP_E.map((e, i) => `<div class="step">${poseSVG(learnDir, e, { tight: true, arrow: STEP_ARROW[i], alt: t(`s_${learnDir}_${i + 1}`) }).svg}<span class="n">${i + 1}</span><p>${esc(t(`s_${learnDir}_${i + 1}`))}</p></div>`).join("");
+  $("mistakesGrid").innerHTML = MISTAKES[learnDir].map(err => {
+    const e = err === "toeLift" ? 0.6 : 1;
+    return `<div class="mistake">
+      <figure>${poseSVG(learnDir, e, { tight: true, err, mark: "bad", focus: FOCUS[err], alt: t(`m_${err}_bad`) }).svg}<figcaption class="bad">${esc(t(`m_${err}_bad`))}</figcaption></figure>
+      <figure>${poseSVG(learnDir, e, { tight: true, mark: "good", focus: FOCUS[err], alt: t(`m_${err}_good`) }).svg}<figcaption class="good">${esc(t(`m_${err}_good`))}</figcaption></figure>
+    </div>`;
+  }).join("");
+}
+document.querySelectorAll(".dir-tabs button").forEach(b => b.addEventListener("click", () => {
+  learnDir = b.dataset.dir; animT0 = performance.now(); renderLearn();
+}));
+
+// --- learn / practice switch ---
+function setView(view){
+  const learn = view === "learn";
+  document.body.classList.toggle("view-learn", learn);
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+  lsSet("ballet-view", view);
+  if (learn){ if (running) stop(); renderLearn(); startAnim(); }
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+$("goPractice").addEventListener("click", () => setView("practice"));
+
 // ---------- voice ----------
 const badSince = {}, lastSpoke = {}; let lastAny = 0;
 function say(text, force){
@@ -1886,6 +2151,7 @@ function voice(out){
 }
 
 applyLang();
+setView(lsGet("ballet-view") || "learn");
 cloudInit();
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
