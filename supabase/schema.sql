@@ -8,6 +8,7 @@ create table if not exists public.dancers (
   id          uuid primary key default gen_random_uuid(),
   owner       uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name        text not null check (char_length(name) between 1 and 60),
+  schedule    jsonb not null default '[]'::jsonb,       -- regular class days, 0 = Sunday … 6 = Saturday
   created_at  timestamptz not null default now()
 );
 
@@ -72,6 +73,31 @@ create policy "own reps" on public.reps
   using (owner = (select auth.uid()))
   with check (owner = (select auth.uid())
               and exists (select 1 from public.sessions s where s.id = session_id and s.owner = (select auth.uid())));
+
+-- Pain diary: one entry per dancer per day
+create table if not exists public.diary (
+  id          uuid primary key default gen_random_uuid(),
+  owner       uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  dancer_id   uuid not null references public.dancers(id) on delete cascade,
+  day         date not null,
+  pain        smallint not null check (pain between 0 and 5),
+  areas       text[] not null default '{}',       -- heel_L, knee_R, …
+  activities  text[] not null default '{}',       -- class, home, rehearsal, rest
+  note        text check (note is null or char_length(note) <= 500),
+  updated_at  timestamptz not null default now(),
+  unique (dancer_id, day)
+);
+alter table public.diary enable row level security;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'diary' and policyname = 'own diary') then
+    create policy "own diary" on public.diary
+      for all to authenticated
+      using (owner = (select auth.uid()))
+      with check (owner = (select auth.uid())
+                  and exists (select 1 from public.dancers d where d.id = dancer_id and d.owner = (select auth.uid())));
+  end if;
+end $$;
 
 -- Private bucket for keyframe pictures; files live under <user id>/...
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

@@ -153,6 +153,54 @@ body.view-learn #learn{display:block}
 body.view-learn > main{display:none}
 body.view-learn > header > p{display:none}
 body.show-gate #learn, body.show-report #learn{display:none!important}
+/* ---------- diary ---------- */
+#diary{display:none}
+body.view-diary #diary{display:block}
+body.view-diary > main{display:none}
+body.view-diary > header > p{display:none}
+body.show-gate #diary, body.show-report #diary{display:none!important}
+.diary-wrap{max-width:1000px;margin:0 auto;display:grid;gap:16px}
+.d-alert{background:#fff4f5;border:1.5px solid var(--bad);border-radius:18px;padding:12px 16px;color:var(--fg)}
+.d-alert p{margin:4px 0}
+.d-alert b{color:var(--bad)}
+.d-form{display:grid;gap:10px}
+.d-form h3{margin:6px 0 0;font-size:16px}
+.d-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.d-row label{font-weight:700}
+.d-row input[type=date]{font:inherit;border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--fg);background:var(--surface)}
+.faces{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.faces button{border-radius:16px;padding:6px 2px;display:grid;justify-items:center;gap:2px;border:2px solid var(--line);background:var(--surface)}
+.faces button svg{width:100%;max-width:46px;height:auto}
+.faces button span{font-size:11px;line-height:1.2;color:var(--muted)}
+.faces button[aria-pressed="true"]{background:var(--pc);border-color:var(--accent)}
+.faces button[aria-pressed="true"] span{color:var(--fg);font-weight:700}
+.dchips{display:flex;flex-wrap:wrap;gap:6px}
+.chip-btn{border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;background:var(--surface);cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.chip-btn[aria-pressed="true"],.chip-btn:has(input:checked){background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.chip-btn input{accent-color:var(--accent)}
+#dNote{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:14px;padding:8px 12px;resize:vertical;color:var(--fg);background:var(--surface)}
+.d-row2{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:1.5em}
+.d-msg{margin:0;font-size:13px;color:var(--bad)}
+.d-msg.ok{color:var(--ok)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:8px}
+.cal-h{font-size:11px;color:var(--muted);text-align:center}
+.cal-d{aspect-ratio:1;border-radius:10px;border:1px solid transparent;padding:0;font-size:12px;font-variant-numeric:tabular-nums;position:relative;color:var(--fg)}
+.cal-d.empty{background:var(--surface);border:1px dashed var(--line);color:var(--muted)}
+.cal-d.today{outline:2px solid var(--accent);outline-offset:1px}
+.cal-d i{position:absolute;right:3px;top:1px;font-size:9px;font-style:normal}
+.cal.big{max-width:560px}
+.cal.big .cal-d{font-size:12px;aspect-ratio:auto;height:30px;border-radius:8px}
+.cal-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.cal-legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-2px}
+.ins{margin:0 0 12px;padding-left:18px;font-size:14px;display:grid;gap:4px}
+.risk-item{border-left:4px solid var(--ph-demi);background:var(--tint);border-radius:0 12px 12px 0;padding:8px 12px;margin-bottom:8px}
+.risk-item .cnt{color:var(--muted);font-size:13px;margin-left:8px}
+.risk-item p{margin:4px 0 0;font-size:13px}
+.tbl-wrap{overflow-x:auto}
+.dtable{border-collapse:collapse;font-size:13px;width:100%}
+.dtable th,.dtable td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.pdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+@media (max-width:420px){.faces{grid-template-columns:repeat(3,minmax(0,1fr))}}
 header .tabs{display:flex;gap:4px;background:var(--tint);border-radius:999px;padding:4px;align-self:center}
 header .tabs button{border:0;background:none;padding:6px 16px;font-weight:700;color:var(--muted)}
 header .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px rgba(74,42,58,.12)}
@@ -349,7 +397,7 @@ body.show-report #report{display:block}
 
 <header>
   <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer" x="0" y="0" width="240" height="256"/></svg><span data-i="title"></span> <span class="mods" role="group" aria-label="move"><button data-m="tendu" data-i="mod_tendu"></button><button data-m="plie" data-i="mod_plie"></button></span></h1>
-  <nav class="tabs" aria-label="view"><button data-view="learn" data-i="navLearn"></button><button data-view="practice" data-i="navPractice"></button></nav>
+  <nav class="tabs" aria-label="view"><button data-view="learn" data-i="navLearn"></button><button data-view="practice" data-i="navPractice"></button><button data-view="diary" data-i="navDiary"></button></nav>
   <p data-i="subtitle"></p>
   <div class="lang" role="group" aria-label="Language">
     <button id="lang-zh" data-lang="zh">中文</button>
@@ -524,6 +572,8 @@ body.show-report #report{display:block}
         <p class="group" data-i="grpPose"></p>
         <div class="slider"><label for="kneeMin" data-i="sKnee"></label><output id="kneeMinOut"></output>
           <input type="range" id="kneeMin" min="150" max="178" step="1" value="165"></div>
+        <div class="slider"><label for="hyperMax" data-i="sHyper"></label><output id="hyperMaxOut"></output>
+          <input type="range" id="hyperMax" min="3" max="15" step="1" value="7"></div>
         <div class="slider"><label for="hipMax" data-i="sHip"></label><output id="hipMaxOut"></output>
           <input type="range" id="hipMax" min="2" max="15" step="1" value="6"></div>
         <div class="slider"><label for="toeMax" data-i="sToe"></label><output id="toeMaxOut"></output>
@@ -554,6 +604,44 @@ body.show-report #report{display:block}
     </div>
   </aside>
 </main>
+
+<section id="diary">
+  <div class="diary-wrap">
+    <div class="learn-intro"><h2 data-i="dTitle"></h2><p data-i="dIntro"></p></div>
+    <div class="d-alert" id="dAlert" hidden></div>
+    <div class="learn-grid">
+      <div class="card d-form">
+        <div class="d-row"><label for="dDay" data-i="dDate"></label><input type="date" id="dDay"></div>
+        <h3 data-i="dPainQ"></h3>
+        <div class="faces" id="dFaces"></div>
+        <div id="dWhereBox" hidden><h3 data-i="dWhereQ"></h3><div class="dchips" id="dAreas"></div></div>
+        <h3 data-i="dActQ"></h3>
+        <div class="dchips" id="dActs"></div>
+        <textarea id="dNote" rows="2" maxlength="500" data-ph="dNotePh" aria-label="note"></textarea>
+        <button class="primary wide" id="dSave"></button>
+        <div class="d-row2"><p class="d-msg" id="dMsg"></p><button class="link" id="dDelete" data-i="dDelete" hidden></button></div>
+      </div>
+      <div class="card">
+        <h3 data-i="dRecent"></h3>
+        <div id="dCal"></div>
+        <div class="cal-legend"><span><i style="background:#dff3ea"></i><span data-i="pain0"></span></span><span><i style="background:#ffc4d2"></i><span data-i="pain2"></span></span><span><i style="background:#dc3550"></i><span data-i="pain5"></span></span><span>★ <span data-i="act_rehearsal"></span></span></div>
+        <ul class="ins" id="dInsights"></ul>
+        <button id="dReport" data-i="dReportBtn"></button>
+      </div>
+    </div>
+    <div class="card"><h3 data-i="dRisk"></h3><div id="dRiskBody"></div><p class="note-sm" data-i="dRiskNote"></p></div>
+    <details class="card"><summary data-i="dScheduleTitle"></summary>
+      <p class="note-sm" data-i="dScheduleHint"></p>
+      <div class="dchips" id="dSchedule">
+        <label class="chip-btn"><input type="checkbox" value="1"> <span data-i="wd1"></span></label><label class="chip-btn"><input type="checkbox" value="2"> <span data-i="wd2"></span></label>
+        <label class="chip-btn"><input type="checkbox" value="3"> <span data-i="wd3"></span></label><label class="chip-btn"><input type="checkbox" value="4"> <span data-i="wd4"></span></label>
+        <label class="chip-btn"><input type="checkbox" value="5"> <span data-i="wd5"></span></label><label class="chip-btn"><input type="checkbox" value="6"> <span data-i="wd6"></span></label>
+        <label class="chip-btn"><input type="checkbox" value="0"> <span data-i="wd0"></span></label>
+      </div>
+    </details>
+    <p class="note-sm" data-i="dPrivacy"></p>
+  </div>
+</section>
 
 <section id="learn">
   <div class="learn-wrap">
@@ -668,6 +756,34 @@ const I18N = {
     soundLabel:"音效提示（全对“叮咚”，有错低音）", angle3dLabel:"用 3D 坐标计算关节角度（推荐）",
     sPointAngle:"全绷：脚背角度至少（膝-踝-脚尖）",
     instepBent:d=>`脚背没完全绷直（${d}°）`, pointedDeg:d=>`全绷（脚背 ${d}°）`,
+    navDiary:"日记", dTitle:"疼痛日记", dIntro:"每天花 10 秒记一下：疼不疼、哪里疼、今天跳了什么。找出规律，看医生时也能派上用场。",
+    dDate:"日期", dPainQ:"今天疼吗？", dWhereQ:"哪里疼？", dActQ:"今天做了什么？", dNotePh:"备注（可选），比如：跳完排练后右脚跟疼",
+    pain0:"不疼", pain1:"有一点", pain2:"有点疼", pain3:"比较疼", pain4:"很疼", pain5:"非常疼",
+    area_heel_L:"左脚跟", area_heel_R:"右脚跟", area_knee_L:"左膝", area_knee_R:"右膝", area_ankle_L:"左脚踝", area_ankle_R:"右脚踝",
+    area_foot_L:"左脚掌/脚趾", area_foot_R:"右脚掌/脚趾", area_hip:"髋", area_back:"腰背", area_other:"其他",
+    act_class:"上课", act_home:"在家练", act_rehearsal:"排练/比赛", act_rest:"休息",
+    dSave:"保存", dUpdate:"更新这一天", dDelete:"删除这一天", dSaved:"已保存", dDeleted:"已删除", dConfirmDelete:"确定删除这一天的记录吗？",
+    dPickPain:"请先选一个疼痛程度", dPickArea:"请选一下哪里疼",
+    dNeedMigration:"需要先在 Supabase 运行 migrate-003-diary.sql，日记才能保存到云端。",
+    dRecent:"最近 4 周", dReportBtn:"生成给医生看的报告（8 周）",
+    dScheduleTitle:"每周固定上课的日子", dScheduleHint:"选好后，记日记时这些天会自动预选「上课」。", dScheduleSaved:"上课日已保存",
+    wd0:"日", wd1:"一", wd2:"二", wd3:"三", wd4:"四", wd5:"五", wd6:"六",
+    dPrivacy:"日记只保存在你自己的账号里（未登录时只保存在这台设备上），其他家庭看不到。App 不做任何诊断。",
+    insDays:(n,p)=>`记录了 ${n} 天，其中 ${p} 天有疼痛`, insAreas:x=>`最常疼的位置：${x}`,
+    insNext:(a,p,n)=>`${a}后的第二天疼：${p}（共 ${n} 次）`,
+    alertSevere:"最近几天疼得比较厉害（4 级以上），建议尽快带她看医生，疼的时候先停下来休息。",
+    alertRepeat:(a,n)=>`${a}最近两周疼了 ${n} 天，反复疼痛建议看儿科或运动医学科，最好是懂舞蹈的物理治疗师。`,
+    alertWhen:"如果走路一瘸一拐、有肿胀，或者休息时、夜里也疼，请尽快就医。",
+    dRisk:"动作里的受伤风险提示", dRiskNote:"这些只是根据动作检测发现的规律，不是诊断。请让老师确认，有疼痛时请咨询医生或物理治疗师。",
+    riskNone:"最近 30 天的练习里，没有发现明显的受伤风险动作。", riskNotEnough:"多用 App 练几次以后，这里会显示动作里的风险规律。",
+    riskRate:p=>`出现在 ${p} 的动作里`,
+    riskTurnoutTitle:"经常硬拧外开", riskTurnout:"Plié 时膝盖经常没对准脚尖。脚尖打开得比髋部能做到的多时，力量会转到膝盖和脚踝上，这和膝盖疼有关。请老师确认她的外开幅度：宁可少开一点，也要膝盖对准脚尖。",
+    riskHyperTitle:"站立腿膝盖超伸", riskHyper:"Tendu 时支撑腿的膝盖常常往后顶。长期这样会增加膝盖后侧的负担，可以请老师提醒她“拉直但不锁死”膝盖。",
+    riskCalfTitle:"Demi-plié 常蹲不深或脚跟离地", riskCalf:"可能和小腿、跟腱比较紧有关，而跟腱紧和脚跟疼常有关联。建议问问老师或物理治疗师，不要自己加大拉伸强度。",
+    drTitle:"疼痛日记报告", drSummary:"概况", drAllAreas:"疼痛位置统计", drCalendar:"每日记录（颜色越深越疼）", drEntries:"全部记录", drPain:"疼痛（0–5）", drNote:"备注",
+    drFoot:"家长记录，仅供参考，不是医疗诊断",
+    n_hyperext:"支撑腿膝盖不超伸", c_hyperext:"支撑腿膝盖不要往后顶", needSide:"需侧面拍", hyperOk:"正常", hyperBad:d=>`往后顶 ${d}°`,
+    t_hyperext:"站立腿要拉直但不锁死：想象膝盖轻轻往前、往上提，而不是往后压。", sHyper:"支撑腿膝盖超伸：最多几度",
     mod_tendu:"Tendu 擦地", mod_plie:"Plié 蹲",
     pos_first:"一位", pos_second:"二位", both:"双腿", posInfo:(p,a)=>"脚位：" + p + (a ? "（自动）" : ""),
     pp_stand:"直立", pp_down:"下蹲", pp_bottom:"最低点", pp_up:"上升", lgGuide:"膝盖→脚尖参考线",
@@ -838,6 +954,34 @@ const I18N = {
     soundLabel:"Sound cues (chime when all correct, low tone otherwise)", angle3dLabel:"Use 3D coordinates for joint angles (recommended)",
     sPointAngle:"Full point: instep angle at least (knee–ankle–toe)",
     instepBent:d=>`Instep not fully stretched (${d}°)`, pointedDeg:d=>`Pointed (instep ${d}°)`,
+    navDiary:"Diary", dTitle:"Pain diary", dIntro:"Ten seconds a day: does anything hurt, where, and what she danced. It shows patterns and helps at a doctor's visit.",
+    dDate:"Date", dPainQ:"Does anything hurt today?", dWhereQ:"Where?", dActQ:"What did she do today?", dNotePh:"Note (optional), e.g. right heel sore after rehearsal",
+    pain0:"No pain", pain1:"A little", pain2:"Some", pain3:"Quite a bit", pain4:"A lot", pain5:"Very much",
+    area_heel_L:"Left heel", area_heel_R:"Right heel", area_knee_L:"Left knee", area_knee_R:"Right knee", area_ankle_L:"Left ankle", area_ankle_R:"Right ankle",
+    area_foot_L:"Left foot/toes", area_foot_R:"Right foot/toes", area_hip:"Hip", area_back:"Back", area_other:"Other",
+    act_class:"Class", act_home:"Home practice", act_rehearsal:"Rehearsal/show", act_rest:"Rest",
+    dSave:"Save", dUpdate:"Update this day", dDelete:"Delete this day", dSaved:"Saved", dDeleted:"Deleted", dConfirmDelete:"Delete this day's entry?",
+    dPickPain:"Pick a pain level first", dPickArea:"Pick where it hurts",
+    dNeedMigration:"Run migrate-003-diary.sql in Supabase first so the diary can save to the cloud.",
+    dRecent:"Last 4 weeks", dReportBtn:"Make a report for the doctor (8 weeks)",
+    dScheduleTitle:"Regular class days", dScheduleHint:"These days get “Class” pre-selected in the diary.", dScheduleSaved:"Class days saved",
+    wd0:"Sun", wd1:"Mon", wd2:"Tue", wd3:"Wed", wd4:"Thu", wd5:"Fri", wd6:"Sat",
+    dPrivacy:"The diary is stored only in your own account (or only on this device when not signed in); other families can't see it. The app doesn't diagnose anything.",
+    insDays:(n,p)=>`${n} days recorded, ${p} with pain`, insAreas:x=>`Most often sore: ${x}`,
+    insNext:(a,p,n)=>`Pain the day after ${a.toLowerCase()}: ${p} (${n} times)`,
+    alertSevere:"She has had strong pain recently (level 4 or more). Please have a doctor look at it soon, and let her rest while it hurts.",
+    alertRepeat:(a,n)=>`${a} hurt on ${n} days in the last two weeks. Repeated pain is worth seeing a pediatrician or sports-medicine doctor, ideally a dance physical therapist.`,
+    alertWhen:"If she limps, there's swelling, or it hurts at rest or at night, see a doctor promptly.",
+    dRisk:"Injury-risk notes from her technique", dRiskNote:"These are patterns from the movement checks, not a diagnosis. Ask the teacher to confirm, and see a doctor or physical therapist about pain.",
+    riskNone:"No clear injury-risk patterns in the last 30 days of practice.", riskNotEnough:"After a few more practices with the app, technique risk patterns appear here.",
+    riskRate:p=>`seen in ${p} of reps`,
+    riskTurnoutTitle:"Forcing turnout", riskTurnout:"In plié the knees often don't stay over the toes. Turning the feet out further than the hips allow sends the strain to the knees and ankles, which is linked to knee pain. Ask the teacher to check her turnout: better to turn out a little less and keep the knees over the toes.",
+    riskHyperTitle:"Standing knee pushed back", riskHyper:"In tendu the standing knee often locks backward (hyperextends). Over time this loads the back of the knee; the teacher can cue her to straighten without locking.",
+    riskCalfTitle:"Shallow demi-plié or heels lifting", riskCalf:"This can come with tight calves and Achilles tendons, which are often linked to heel pain. Ask the teacher or a physical therapist rather than stretching harder on her own.",
+    drTitle:"Pain Diary Report", drSummary:"Summary", drAllAreas:"Where it hurt", drCalendar:"Daily entries (darker = more pain)", drEntries:"All entries", drPain:"Pain (0–5)", drNote:"Note",
+    drFoot:"Recorded by a parent, for reference only, not a medical diagnosis",
+    n_hyperext:"Standing knee not pushed back", c_hyperext:"Don't lock your standing knee back", needSide:"Side view needed", hyperOk:"OK", hyperBad:d=>`Pushed back ${d}°`,
+    t_hyperext:"Straighten the standing leg without locking it: think of lifting the knee slightly forward and up, not pressing it back.", sHyper:"Standing knee hyperextension: at most",
     mod_tendu:"Tendu", mod_plie:"Plié",
     pos_first:"1st position", pos_second:"2nd position", both:"Both legs", posInfo:(p,a)=>"Position: " + p + (a ? " (auto)" : ""),
     pp_stand:"Standing", pp_down:"Going down", pp_bottom:"Bottom", pp_up:"Coming up", lgGuide:"Knee → toe guide",
@@ -957,8 +1101,8 @@ const PHASES = { "-1":["ph_off","--ph-off"], "0":["ph_flat","--ph-flat"], "1":["
 // each move: checks shown every frame (live), checks judged once per rep, and what the report rates
 const MODS = {
   tendu: { live: ["workKnee", "supportKnee", "hips", "toe"],
-           rep:  ["floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close"],
-           rate: ["workKnee", "supportKnee", "hips", "floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close"],
+           rep:  ["floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close", "hyperext"],
+           rate: ["workKnee", "supportKnee", "hips", "floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close", "hyperext"],
            dirs: ["devant", "seconde", "derriere"] },
   plie:  { live: ["kneesOver", "heelsDown", "upright", "level"],
            rep:  ["depth", "kneeTrack", "heels", "uprightRep", "levelRep", "even", "smooth"],
@@ -982,7 +1126,7 @@ const SL = {
   liftMin:[v=>v/100, v=>v+"%"], liftMax:[v=>v/100, v=>v+"%"], heelDownMin:[v=>v/100, v=>v+"%"], demiMin:[v=>v/100, v=>v+"%"],
   kneeMin:[v=>v, v=>v+"°"], hipMax:[v=>v, v=>v+"°"], toeMax:[v=>v/100, v=>v+"%"], pathMax:[v=>v/100, v=>v+"%"],
   closeMax:[v=>v, v=>v.toFixed(1)],
-  pointAngle:[v=>v, v=>v+"°"], pDemiMin:[v=>v, v=>v+"°"], grandMin:[v=>v, v=>v+"°"], kneeTrackMin:[v=>v/100, v=>v+"%"], tiltMax:[v=>v, v=>v+"°"], evenMax:[v=>v, v=>v+"°"],
+  pointAngle:[v=>v, v=>v+"°"], hyperMax:[v=>v, v=>v+"°"], pDemiMin:[v=>v, v=>v+"°"], grandMin:[v=>v, v=>v+"°"], kneeTrackMin:[v=>v/100, v=>v+"%"], tiltMax:[v=>v, v=>v+"°"], evenMax:[v=>v, v=>v+"°"],
 };
 function readCfg(){
   for (const [id, [conv, show]] of Object.entries(SL)){ const v = +$(id).value; cfg[id] = conv(v); $(id + "Out").textContent = show(v); }
@@ -1032,6 +1176,7 @@ function applyLang(){
   if (lastRep) showRep(lastRep);
   if (typeof renderAcct === "function"){ renderAcct(); renderHistList(); renderGate(); }
   if (typeof renderLearn === "function" && document.body.classList.contains("view-learn")) renderLearn();
+  if (typeof renderForm === "function" && document.body.classList.contains("view-diary")){ renderForm(); renderDiary(false); if (dMsg) setDMsg(...dMsg); }
   if (document.body.classList.contains("show-report")) renderReport(reportCtx);
   if (lastDir !== undefined) $("dirChip").querySelector("span").textContent = dirLabel(lastDir);
 }
@@ -1347,7 +1492,14 @@ function analyzeTendu(lm, wlm){
   // instep: knee–ankle–toe angle of the working foot (≈180° when the foot is fully stretched)
   const wi = LEGS[workSide];
   const ankA = Math.min(work.knee.v, work.ankle.v, work.toe.v) >= VIS ? smooth("ankA", jointAngle(lm, wlm, wi.knee, wi.ankle, wi.toe)) : null;
-  trackRep({ t: video.currentTime, lean: workLean, ph, ankA, toe: { x: work.toe.x, y: work.toe.y }, toeVis: work.toe.v }, out, work, sup, legLen, footRef);
+  // standing-knee hyperextension (side view): the knee sits BEHIND the hip–ankle line instead of on or in front of it
+  let hyper = null;
+  if (view === "side" && facing && Math.min(sup.hip.v, sup.knee.v, sup.ankle.v) >= VIS && Math.abs(sup.ankle.y - sup.hip.y) > 1){
+    const lineX = sup.hip.x + (sup.ankle.x - sup.hip.x) * (sup.knee.y - sup.hip.y) / (sup.ankle.y - sup.hip.y);
+    const bendS = 180 - angle(sup.hip, sup.knee, sup.ankle);
+    hyper = smooth("hyper", (sup.knee.x - lineX) * facing < 0 ? bendS : -bendS);
+  }
+  trackRep({ t: video.currentTime, lean: workLean, ph, ankA, hyper, toe: { x: work.toe.x, y: work.toe.y }, toeVis: work.toe.v }, out, work, sup, legLen, footRef);
 
   for (const k of LIVE) setRow(liveEls, k, out[k]);
   draw(lm, work, sup, out);
@@ -1523,6 +1675,11 @@ function judgeRep(S, closedNormally, work, sup, legLen, footRef){
       segDist(sup.heel, work.heel, work.toe), segDist(sup.toe, work.heel, work.toe)) / footRef;
     R.close = gap < 0.1 ? ["ok", "snug"] : [gap <= cfg.closeMax ? "ok" : "bad", "gap", gap.toFixed(1)];
   }
+
+  // standing knee pushed back (median over the tendu, so a single noisy frame doesn't count)
+  const hv = V.filter(s => s.hyper != null).map(s => s.hyper).sort((a, b) => a - b);
+  if (!hv.length) R.hyperext = ["na", "needSide"];
+  else { const med = hv[Math.floor(hv.length / 2)]; R.hyperext = med > cfg.hyperMax ? ["bad", "hyperBad", Math.round(med)] : ["ok", "hyperOk"]; }
 
   // filming advice for this direction
   if (!note && dir === "seconde" && view === "side") note = ["secondeSide"];
@@ -1808,6 +1965,11 @@ function renderReport(ctx = reportCtx){
     h += `</div>`;
   }
 
+  // injury-risk patterns in this session
+  const statMap = {}; stats.forEach(x => statMap[x.k] = { fail: x.fails, meas: x.meas });
+  const risks = riskNotes(k => statMap[k]);
+  if (risks.length) h += `<h2>${esc(t("dRisk"))}</h2>${riskHTML(risks)}<p class="note-sm">${esc(t("dRiskNote"))}</p>`;
+
   // 3. pass rate per check
   h += `<h2>${esc(t("rpRates"))}</h2><div class="rates">`;
   for (const s of stats){
@@ -1964,6 +2126,7 @@ async function loadDancers(){
   const saved = lsGet("ballet-dancer");
   cloud.dancerId = (cloud.dancers.find(d => d.id === saved) || cloud.dancers[0] || {}).id || null;
   renderAcct(); loadHistoryList(); flushSoon();
+  if (document.body.classList.contains("view-diary")) renderDiary();
 }
 function renderAcct(){
   if (!cloud.enabled) return;
@@ -2046,6 +2209,7 @@ function switchDancer(id){
   if (reps.length) newSession();              // a session belongs to one dancer
   cloud.dancerId = id; lsSet("ballet-dancer", id);
   renderAcct(); loadHistoryList(); flushSoon();
+  if (document.body.classList.contains("view-diary")) renderDiary();
 }
 
 // --- per-tendu leg coordinates (shoulders, hips, knees, ankles, heels, toes) ---
@@ -2627,8 +2791,11 @@ document.querySelectorAll("[data-m]").forEach(b => b.addEventListener("click", (
 
 // --- learn / practice switch ---
 function setView(view){
+  if (!["learn", "practice", "diary"].includes(view)) view = "learn";
   const learn = view === "learn";
   document.body.classList.toggle("view-learn", learn);
+  document.body.classList.toggle("view-diary", view === "diary");
+  if (view === "diary"){ if (running) stop(); renderDiary(); }
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
   lsSet("ballet-view", view);
   if (learn){ if (running) stop(); renderLearn(); startAnim(); }
@@ -2636,6 +2803,243 @@ function setView(view){
 }
 document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
 $("goPractice").addEventListener("click", () => setView("practice"));
+
+// ---------- pain diary ----------
+// One entry per dancer per day: pain 0–5, where it hurts, what she did that day, an optional note.
+// Stored in the cloud (table "diary") when signed in, otherwise in this browser.
+// The app never diagnoses: it only spots patterns and suggests seeing a doctor when pain is strong or keeps coming back.
+const AREAS = ["heel_L", "heel_R", "knee_L", "knee_R", "ankle_L", "ankle_R", "foot_L", "foot_R", "hip", "back", "other"];
+const ACTS = ["class", "home", "rehearsal", "rest"];
+const PAIN_COL = ["#dff3ea", "#ffe3ea", "#ffc4d2", "#ff98ae", "#f0607c", "#dc3550"];
+const p2 = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+const parseDay = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseDay(s); d.setDate(d.getDate() + n); return ymd(d); };
+const todayStr = () => ymd(new Date());
+const DKEY = "ballet-diary", SKEY = "ballet-schedule";
+
+const diary = { entries: [], schedule: [], form: { day: todayStr(), pain: null, areas: [], acts: [], note: "" }, loaded: false, err: null };
+
+// --- original face drawings for the 0–5 scale ---
+function faceSVG(level){
+  const mouth = level <= 1 ? `M14 28 Q22 ${36 - level * 2} 30 28` : level === 2 ? "M15 30 L29 30" : `M14 ${33 - (level - 3)} Q22 ${24 - (level - 3) * 2} 30 ${33 - (level - 3)}`;
+  const brows = level >= 3 ? `<path d="M11 ${13 - (level - 3)} L18 ${15 + (level - 3)} M33 ${13 - (level - 3)} L26 ${15 + (level - 3)}" stroke="#5a3344" stroke-width="2" stroke-linecap="round"/>` : "";
+  const eyes = level === 0 ? `<path d="M12 19 Q15 16 18 19 M26 19 Q29 16 32 19" stroke="#5a3344" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
+                           : `<circle cx="15" cy="19" r="2.2" fill="#5a3344"/><circle cx="29" cy="19" r="2.2" fill="#5a3344"/>`;
+  const tear = level === 5 ? `<path d="M31 23 Q33 28 31 30 Q29 28 31 23 Z" fill="#7cc4ef"/>` : "";
+  const blush = level <= 1 ? `<circle cx="11" cy="25" r="3" fill="#ff9fc0" opacity=".5"/><circle cx="33" cy="25" r="3" fill="#ff9fc0" opacity=".5"/>` : "";
+  return `<svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="#ffe8dc"/>${blush}${eyes}${brows}<path d="${mouth}" stroke="#5a3344" stroke-width="2.2" fill="none" stroke-linecap="round"/>${tear}</svg>`;
+}
+
+// --- storage ---
+const diaryTableMissing = e => e && (e.code === "42P01" || e.code === "PGRST205" || /diary/i.test(e.message || "") && /exist|find|schema cache/i.test(e.message || ""));
+async function diaryLoad(){
+  diary.err = null;
+  if (cloudReady()){
+    const since = addDays(todayStr(), -120);
+    const { data, error } = await cloud.sb.from("diary").select("day,pain,areas,activities,note").eq("dancer_id", cloud.dancerId).gte("day", since).order("day", { ascending: false });
+    if (error){ diary.err = diaryTableMissing(error) ? "dNeedMigration" : ["authErr", error.message]; diary.entries = []; }
+    else diary.entries = (data || []).map(r => ({ day: r.day, pain: r.pain, areas: r.areas || [], acts: r.activities || [], note: r.note || "" }));
+    const d = cloud.dancers.find(x => x.id === cloud.dancerId);
+    diary.schedule = (d && Array.isArray(d.schedule)) ? d.schedule : [];
+    if (!d || d.schedule === undefined){
+      const { data: dd } = await cloud.sb.from("dancers").select("schedule").eq("id", cloud.dancerId).single();
+      if (dd && Array.isArray(dd.schedule)){ diary.schedule = dd.schedule; if (d) d.schedule = dd.schedule; }
+    }
+  } else {
+    try { diary.entries = JSON.parse(lsGet(DKEY) || "[]"); } catch { diary.entries = []; }
+    try { diary.schedule = JSON.parse(lsGet(SKEY) || "[]"); } catch { diary.schedule = []; }
+  }
+  diary.entries.sort((a, b) => b.day.localeCompare(a.day));
+  diary.loaded = true;
+}
+async function diarySave(e){
+  if (cloudReady()){
+    const { error } = await cloud.sb.from("diary").upsert({ dancer_id: cloud.dancerId, day: e.day, pain: e.pain, areas: e.areas, activities: e.acts,
+      note: e.note || null, updated_at: new Date().toISOString() }, { onConflict: "dancer_id,day" });
+    if (error) throw error;
+  }
+  diary.entries = diary.entries.filter(x => x.day !== e.day).concat([{ ...e }]).sort((a, b) => b.day.localeCompare(a.day));
+  if (!cloudReady()) lsSet(DKEY, JSON.stringify(diary.entries));
+}
+async function diaryDelete(day){
+  if (cloudReady()){
+    const { error } = await cloud.sb.from("diary").delete().eq("dancer_id", cloud.dancerId).eq("day", day);
+    if (error) throw error;
+  }
+  diary.entries = diary.entries.filter(x => x.day !== day);
+  if (!cloudReady()) lsSet(DKEY, JSON.stringify(diary.entries));
+}
+async function scheduleSave(days){
+  diary.schedule = days;
+  if (cloudReady()){
+    const { error } = await cloud.sb.from("dancers").update({ schedule: days }).eq("id", cloud.dancerId);
+    if (error) throw error;
+    const d = cloud.dancers.find(x => x.id === cloud.dancerId); if (d) d.schedule = days;
+  } else lsSet(SKEY, JSON.stringify(days));
+}
+
+// --- the form ---
+const entryFor = day => diary.entries.find(e => e.day === day);
+function practicedOn(day){
+  if (reps.some(r => ymd(new Date(r.at)) === day)) return true;
+  return loadHistory().some(h => h.start && ymd(new Date(h.start)) === day);
+}
+function loadForm(day){
+  const e = entryFor(day);
+  if (e) diary.form = { day, pain: e.pain, areas: [...e.areas], acts: [...e.acts], note: e.note || "" };
+  else {
+    const acts = [];
+    if (diary.schedule.includes(parseDay(day).getDay())) acts.push("class");
+    if (practicedOn(day)) acts.push("home");
+    diary.form = { day, pain: null, areas: [], acts, note: "" };
+  }
+  renderForm();
+}
+function renderForm(){
+  const f = diary.form, editing = !!entryFor(f.day);
+  $("dDay").value = f.day; $("dDay").max = todayStr();
+  $("dFaces").innerHTML = [0, 1, 2, 3, 4, 5].map(l => `<button type="button" data-pain="${l}" aria-pressed="${f.pain === l}" style="--pc:${PAIN_COL[l]}">${faceSVG(l)}<span>${esc(t("pain" + l))}</span></button>`).join("");
+  $("dWhereBox").hidden = !(f.pain > 0);
+  $("dAreas").innerHTML = AREAS.map(a => `<button type="button" class="chip-btn" data-area="${a}" aria-pressed="${f.areas.includes(a)}">${esc(t("area_" + a))}</button>`).join("");
+  $("dActs").innerHTML = ACTS.map(a => `<button type="button" class="chip-btn" data-act="${a}" aria-pressed="${f.acts.includes(a)}">${esc(t("act_" + a))}</button>`).join("");
+  $("dNote").value = f.note;
+  $("dSave").textContent = t(editing ? "dUpdate" : "dSave");
+  $("dDelete").hidden = !editing;
+}
+$("dFaces").addEventListener("click", e => { const b = e.target.closest("[data-pain]"); if (!b) return; diary.form.pain = +b.dataset.pain; if (!diary.form.pain) diary.form.areas = []; renderForm(); });
+$("dAreas").addEventListener("click", e => { const b = e.target.closest("[data-area]"); if (!b) return; const a = b.dataset.area, f = diary.form; f.areas = f.areas.includes(a) ? f.areas.filter(x => x !== a) : f.areas.concat(a); renderForm(); });
+$("dActs").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return; const a = b.dataset.act, f = diary.form;
+  f.acts = f.acts.includes(a) ? f.acts.filter(x => x !== a) : (a === "rest" ? ["rest"] : f.acts.filter(x => x !== "rest").concat(a));   // rest excludes the others
+  renderForm();
+});
+$("dNote").addEventListener("input", e => diary.form.note = e.target.value.slice(0, 500));
+$("dDay").addEventListener("change", e => { if (e.target.value) loadForm(e.target.value > todayStr() ? todayStr() : e.target.value); });
+let dMsg = null;
+function setDMsg(key, arg, ok){ dMsg = key ? [key, arg, ok] : null; $("dMsg").textContent = key ? t(key, arg) : ""; $("dMsg").classList.toggle("ok", !!ok); }
+$("dSave").addEventListener("click", async () => {
+  const f = diary.form;
+  if (f.pain == null){ setDMsg("dPickPain"); return; }
+  if (f.pain > 0 && !f.areas.length){ setDMsg("dPickArea"); return; }
+  $("dSave").disabled = true;
+  try { await diarySave({ day: f.day, pain: f.pain, areas: f.areas, acts: f.acts, note: f.note.trim() }); setDMsg("dSaved", null, true); renderDiary(false); }
+  catch(err){ setDMsg(diaryTableMissing(err) ? "dNeedMigration" : "authErr", err.message); }
+  finally { $("dSave").disabled = false; }
+});
+$("dDelete").addEventListener("click", async () => {
+  if (!confirm(t("dConfirmDelete"))) return;
+  try { await diaryDelete(diary.form.day); setDMsg("dDeleted", null, true); loadForm(diary.form.day); renderDiary(false); }
+  catch(err){ setDMsg("authErr", err.message); }
+});
+$("dSchedule").addEventListener("change", async () => {
+  const days = [...$("dSchedule").querySelectorAll("input:checked")].map(i => +i.value);
+  try { await scheduleSave(days); setDMsg("dScheduleSaved", null, true); } catch(err){ setDMsg("authErr", err.message); }
+});
+
+// --- patterns, alerts, technique risks ---
+function diaryStats(days){
+  const since = addDays(todayStr(), -(days - 1)), byDay = {};
+  diary.entries.forEach(e => byDay[e.day] = e);
+  const recent = diary.entries.filter(e => e.day >= since);
+  const areaCount = {};
+  recent.forEach(e => e.areas.forEach(a => areaCount[a] = (areaCount[a] || 0) + 1));
+  const nextDay = {};                                    // pain on the day after each kind of activity
+  for (const a of ACTS){
+    const days_ = recent.filter(e => e.acts.includes(a) && byDay[addDays(e.day, 1)]);
+    if (days_.length >= 2) nextDay[a] = { n: days_.length, rate: days_.filter(e => byDay[addDays(e.day, 1)].pain > 0).length / days_.length };
+  }
+  return { since, recent, painDays: recent.filter(e => e.pain > 0).length, areaCount, nextDay, byDay };
+}
+function diaryAlerts(){
+  const out = [], t3 = addDays(todayStr(), -2), t14 = addDays(todayStr(), -13);
+  if (diary.entries.some(e => e.day >= t3 && e.pain >= 4)) out.push(["alertSevere"]);
+  const c = {};
+  diary.entries.filter(e => e.day >= t14 && e.pain > 0).forEach(e => e.areas.forEach(a => c[a] = (c[a] || 0) + 1));
+  for (const [a, n] of Object.entries(c)) if (n >= 5) out.push(["alertRepeat", t("area_" + a), n]);
+  return out;
+}
+// technique patterns that are linked to sore knees and heels; get(key) → { fail, meas }
+function riskNotes(get){
+  const out = [], r = k => { const x = get(k); return x && x.meas >= 3 ? x.fail / x.meas : null; };
+  const kt = r("kneeTrack"); if (kt != null && kt > 0.3) out.push(["riskTurnout", pct(kt)]);
+  const hy = r("hyperext"); if (hy != null && hy > 0.3) out.push(["riskHyper", pct(hy)]);
+  const dp = r("depth"), hl = r("heels");
+  if (dp != null || hl != null){ const m = Math.max(dp ?? 0, hl ?? 0); if (m > 0.4) out.push(["riskCalf", pct(m)]); }
+  return out;
+}
+async function allRecentHistory(days){
+  const since = Date.now() - days * 864e5;
+  if (cloudReady()){
+    const { data, error } = await cloud.sb.from("sessions").select("id,module,started_at,total,good,summary").eq("dancer_id", cloud.dancerId).gte("started_at", new Date(since).toISOString());
+    if (!error) return (data || []).map(r => ({ id: r.id, start: Date.parse(r.started_at), ...(r.summary || {}) }));
+  }
+  return loadHistory().filter(h => h.start && h.start >= since);
+}
+async function recentRisks(){
+  const hs = await allRecentHistory(30), cur = reps.length ? sessionSummary() : null;
+  const list = hs.filter(h => !cur || h.id !== cur.id).concat(cur ? [cur] : []);
+  const agg = {};
+  for (const h of list) for (const k of Object.keys(h.meas || {})) { agg[k] = agg[k] || { fail: 0, meas: 0 }; agg[k].meas += h.meas[k]; agg[k].fail += (h.fails || {})[k] || 0; }
+  return { notes: riskNotes(k => agg[k]), enough: Object.values(agg).some(x => x.meas >= 3) };
+}
+const riskHTML = notes => notes.map(([k, p]) => `<div class="risk-item"><b>${esc(t(k + "Title"))}</b><span class="cnt">${esc(t("riskRate", p))}</span><p>${esc(t(k))}</p></div>`).join("");
+
+// --- page ---
+function calHTML(days, big){
+  const st = diaryStats(days), start = addDays(todayStr(), -(days - 1)), first = parseDay(start).getDay();
+  const pad = (first + 6) % 7;                             // weeks start on Monday
+  let h = `<div class="cal${big ? " big" : ""}">` + [1, 2, 3, 4, 5, 6, 0].map(d => `<span class="cal-h">${esc(t("wd" + d))}</span>`).join("");
+  for (let i = 0; i < pad; i++) h += `<span class="cal-pad"></span>`;
+  for (let i = 0; i < days; i++){
+    const day = addDays(start, i), e = st.byDay[day], dd = parseDay(day).getDate();
+    const tip = e ? `${day} · ${t("pain" + e.pain)}${e.areas.length ? " · " + e.areas.map(a => t("area_" + a)).join(", ") : ""}${e.acts.length ? " · " + e.acts.map(a => t("act_" + a)).join(", ") : ""}` : day;
+    h += `<button type="button" class="cal-d${e ? "" : " empty"}${day === todayStr() ? " today" : ""}" data-day="${day}" title="${esc(tip)}" style="${e ? `background:${PAIN_COL[e.pain]};${e.pain >= 4 ? "color:#fff" : ""}` : ""}">${dd}${e && e.acts.includes("rehearsal") ? "<i>★</i>" : ""}</button>`;
+  }
+  return h + `</div>`;
+}
+function insightsHTML(st){
+  const lines = [];
+  lines.push(t("insDays", st.recent.length, st.painDays));
+  const top = Object.entries(st.areaCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  if (top.length) lines.push(t("insAreas", top.map(([a, n]) => `${t("area_" + a)} (${n})`).join(t("sep"))));
+  for (const a of ["rehearsal", "class", "home", "rest"]) if (st.nextDay[a]) lines.push(t("insNext", t("act_" + a), pct(st.nextDay[a].rate), st.nextDay[a].n));
+  return lines.map(l => `<li>${esc(l)}</li>`).join("");
+}
+async function renderDiary(reload = true){
+  if (reload || !diary.loaded){ $("dCal").innerHTML = `<p class="note-sm">${esc(t("loadingHist"))}</p>`; await diaryLoad(); loadForm(diary.form.day || todayStr()); }
+  if (diary.err) setDMsg(...(Array.isArray(diary.err) ? diary.err : [diary.err]));
+  $("dSchedule").querySelectorAll("input").forEach(i => i.checked = diary.schedule.includes(+i.value));
+  $("dCal").innerHTML = calHTML(28, false);
+  $("dInsights").innerHTML = insightsHTML(diaryStats(28));
+  const al = diaryAlerts();
+  $("dAlert").hidden = !al.length;
+  $("dAlert").innerHTML = al.map(([k, a, n]) => `<p><b>${esc(t(k, a, n))}</b></p>`).join("") + `<p>${esc(t("alertWhen"))}</p>`;
+  $("dRiskBody").innerHTML = `<p class="note-sm">${esc(t("loadingHist"))}</p>`;
+  const rr = await recentRisks();
+  $("dRiskBody").innerHTML = rr.notes.length ? riskHTML(rr.notes) : `<p class="note-sm">${esc(t(rr.enough ? "riskNone" : "riskNotEnough"))}</p>`;
+}
+$("dCal").addEventListener("click", e => { const b = e.target.closest("[data-day]"); if (!b) return; setDMsg(null); loadForm(b.dataset.day); $("dDay").scrollIntoView({ behavior: "smooth", block: "center" }); });
+
+// --- 8-week report for the doctor or physical therapist (printable) ---
+$("dReport").addEventListener("click", async () => {
+  const days = 56, st = diaryStats(days), rr = await recentRisks();
+  const name = cloudReady() ? (cloud.dancers.find(d => d.id === cloud.dancerId) || {}).name : "";
+  const top = Object.entries(st.areaCount).sort((a, b) => b[1] - a[1]);
+  let h = `<div class="rp-bar no-print"><button id="rpBack">${esc(t("rpBack"))}</button><button class="primary" id="rpPrint">${esc(t("rpPrint"))}</button></div>`;
+  h += `<article class="rp"><h1>${esc(t("drTitle"))}</h1><p class="sub">${name ? esc(name) + " · " : ""}${esc(fDate(parseDay(st.since)))} – ${esc(fDate(new Date()))}</p>`;
+  h += `<h2>${esc(t("drSummary"))}</h2><ul class="ins">${insightsHTML(st)}</ul>`;
+  if (top.length) h += `<p class="note-sm">${esc(t("drAllAreas"))}: ${esc(top.map(([a, n]) => `${t("area_" + a)} ${n}`).join(" · "))}</p>`;
+  h += `<h2>${esc(t("drCalendar"))}</h2>${calHTML(days, true)}<div class="cal-legend">${[0, 1, 2, 3, 4, 5].map(l => `<span><i style="background:${PAIN_COL[l]}"></i>${esc(l + " " + t("pain" + l))}</span>`).join("")}<span>★ ${esc(t("act_rehearsal"))}</span></div>`;
+  h += `<h2>${esc(t("dRisk"))}</h2>${rr.notes.length ? riskHTML(rr.notes) : `<p class="note-sm">${esc(t(rr.enough ? "riskNone" : "riskNotEnough"))}</p>`}`;
+  h += `<h2>${esc(t("drEntries"))}</h2><div class="tbl-wrap"><table class="dtable"><tr><th>${esc(t("dDate"))}</th><th>${esc(t("drPain"))}</th><th>${esc(t("dWhereQ"))}</th><th>${esc(t("dActQ"))}</th><th>${esc(t("drNote"))}</th></tr>`;
+  for (const e of st.recent) h += `<tr><td>${esc(e.day)}</td><td><span class="pdot" style="background:${PAIN_COL[e.pain]}"></span>${e.pain}</td><td>${esc(e.areas.map(a => t("area_" + a)).join(", "))}</td><td>${esc(e.acts.map(a => t("act_" + a)).join(", "))}</td><td>${esc(e.note || "")}</td></tr>`;
+  h += `</table></div><div class="rp-foot">${esc(t("drFoot"))} · ${esc(t("generated", new Date().toLocaleString(locale())))}</div></article>`;
+  $("report").innerHTML = h;
+  document.body.classList.add("show-report"); window.scrollTo(0, 0);
+  $("rpBack").addEventListener("click", () => document.body.classList.remove("show-report"));
+  $("rpPrint").addEventListener("click", () => window.print());
+});
 
 // ---------- sound ----------
 // Short synthesized tones carry across a room better than speech. The audio context is unlocked by the
