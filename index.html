@@ -21,7 +21,7 @@
 :root{
   --bg:#ffffff; --tint:#faf6f8; --surface:#ffffff; --fg:#4a2a3a; --muted:#8a6577; --line:#efe4e9;
   --accent:#cf3577; --accent-soft:#ffe3ee; --accent-ink:#ffffff; --ok:#239063; --bad:#dc3550; --na:#d9c3cd;
-  --ph-flat:#7aa7e0; --ph-demi:#f2b33d; --ph-point:#b05ad6; --ph-off:#dc3550;
+  --ph-flat:#7aa7e0; --ph-demi:#f2b33d; --ph-point:#b05ad6; --ph-off:#dc3550; --ph-up:#3fb39b;
   --font:"Nunito","PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
   --display:"Fredoka","Nunito","PingFang SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
   color-scheme:light;
@@ -189,6 +189,11 @@ header .tabs button[aria-pressed="true"]{background:var(--surface);color:var(--a
 .mistake .good{color:var(--ok)}
 .learn-cta{display:flex;justify-content:center;padding:8px 0 28px}
 .learn-cta button{max-width:360px}
+/* module switch and module-only blocks */
+h1 .mods{display:inline-flex;gap:2px;background:var(--tint);border-radius:999px;padding:3px;font-family:var(--font);letter-spacing:0}
+h1 .mods button{border:0;background:none;padding:3px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+h1 .mods button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+body[data-mod="plie"] [data-mod="tendu"], body[data-mod="tendu"] [data-mod="plie"]{display:none!important}
 .exports{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .exports button{padding:4px 10px;font-size:12px}
 .exports small{flex-basis:100%;color:var(--muted);font-size:12px}
@@ -339,7 +344,7 @@ body.show-report #report{display:block}
 </section>
 
 <header>
-  <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer" x="0" y="0" width="240" height="256"/></svg><span data-i="title"></span> <span class="module" data-i="module"></span></h1>
+  <h1><svg class="mini-dancer" viewBox="20 20 210 236" aria-hidden="true"><use href="#dancer" x="0" y="0" width="240" height="256"/></svg><span data-i="title"></span> <span class="mods" role="group" aria-label="move"><button data-m="tendu" data-i="mod_tendu"></button><button data-m="plie" data-i="mod_plie"></button></span></h1>
   <nav class="tabs" aria-label="view"><button data-view="learn" data-i="navLearn"></button><button data-view="practice" data-i="navPractice"></button></nav>
   <p data-i="subtitle"></p>
   <div class="lang" role="group" aria-label="Language">
@@ -381,7 +386,16 @@ body.show-report #report{display:block}
         <option value="raw" data-i="recRaw"></option>
       </select>
     </div>
-    <div class="legend">
+    <div class="legend" data-mod="plie">
+      <span style="--c:var(--ph-flat)" data-i="pp_stand"></span>
+      <span style="--c:var(--ph-demi)" data-i="pp_down"></span>
+      <span style="--c:var(--ph-point)" data-i="pp_bottom"></span>
+      <span style="--c:var(--ph-up)" data-i="pp_up"></span>
+      <span style="--c:#ffd666" data-i="lgGuide"></span>
+      <span style="--c:var(--ok)" data-i="lgOk"></span>
+      <span style="--c:var(--bad)" data-i="lgBad"></span>
+    </div>
+    <div class="legend" data-mod="tendu">
       <span style="--c:var(--ph-flat)" data-i="lgFlat"></span>
       <span style="--c:var(--ph-demi)" data-i="lgDemi"></span>
       <span style="--c:var(--ph-point)" data-i="lgPoint"></span>
@@ -413,7 +427,7 @@ body.show-report #report{display:block}
       <div id="repEmpty" class="empty" data-i="repEmpty"></div>
       <div id="repBody" hidden>
         <div class="timeline" id="timeline"></div>
-        <div class="tl-axis"><span data-i="axStart"></span><span data-i="axFar"></span><span data-i="axClose"></span></div>
+        <div class="tl-axis"><span id="axS"></span><span id="axF"></span><span id="axC"></span></div>
         <div class="note" id="repNote"></div>
         <ul class="checks" id="repChecks"></ul>
       </div>
@@ -450,6 +464,26 @@ body.show-report #report{display:block}
     <div class="card">
       <details>
         <summary data-i="settings"></summary>
+        <div data-mod="plie">
+        <div class="slider"><label for="pPos" data-i="pPosLabel"></label><span></span>
+          <select id="pPos">
+            <option value="auto" data-i="auto"></option>
+            <option value="first" data-i="pos_first"></option>
+            <option value="second" data-i="pos_second"></option>
+          </select></div>
+        <p class="group" data-i="grpPlie"></p>
+        <div class="slider"><label for="pDemiMin" data-i="sPDemiMin"></label><output id="pDemiMinOut"></output>
+          <input type="range" id="pDemiMin" min="15" max="60" step="1" value="30"></div>
+        <div class="slider"><label for="grandMin" data-i="sGrandMin"></label><output id="grandMinOut"></output>
+          <input type="range" id="grandMin" min="50" max="100" step="1" value="70"></div>
+        <div class="slider"><label for="kneeTrackMin" data-i="sKneeTrack"></label><output id="kneeTrackMinOut"></output>
+          <input type="range" id="kneeTrackMin" min="0" max="100" step="5" value="35"></div>
+        <div class="slider"><label for="tiltMax" data-i="sTilt"></label><output id="tiltMaxOut"></output>
+          <input type="range" id="tiltMax" min="2" max="15" step="1" value="6"></div>
+        <div class="slider"><label for="evenMax" data-i="sEven"></label><output id="evenMaxOut"></output>
+          <input type="range" id="evenMax" min="5" max="30" step="1" value="15"></div>
+        </div>
+        <div data-mod="tendu">
         <div class="slider"><label for="dir" data-i="dirLabel"></label><span></span>
           <select id="dir">
             <option value="auto" data-i="auto"></option>
@@ -491,6 +525,7 @@ body.show-report #report{display:block}
           <input type="range" id="pathMax" min="3" max="15" step="1" value="6"></div>
         <div class="slider"><label for="closeMax" data-i="sClose"></label><output id="closeMaxOut"></output>
           <input type="range" id="closeMax" min="0.2" max="1" step="0.1" value="0.4"></div>
+        </div>
 
         <p class="group" data-i="grpOther"></p>
         <div class="slider"><label for="model" data-i="modelLabel"></label><span></span>
@@ -513,10 +548,8 @@ body.show-report #report{display:block}
 
 <section id="learn">
   <div class="learn-wrap">
-    <div class="learn-intro"><h2 data-i="lTitle"></h2><p data-i="lIntro"></p></div>
-    <div class="dir-tabs" role="tablist">
-      <button role="tab" data-dir="devant"></button><button role="tab" data-dir="seconde"></button><button role="tab" data-dir="derriere"></button>
-    </div>
+    <div class="learn-intro"><h2 id="learnTitle"></h2><p id="learnIntro"></p></div>
+    <div class="dir-tabs" role="tablist" id="dirTabs"></div>
     <div class="learn-grid">
       <div class="card anim-card">
         <span class="view-badge" id="viewBadge"></span>
@@ -615,6 +648,38 @@ const I18N = {
     recUnsupported:"这个浏览器不支持录制，请用电脑版 Chrome 或 Edge。", recFail:m=>"无法录制：" + m,
     recDone:"录好了，在右边「录像」里可以保存或重新分析。",
     leaveWarn:"还有没保存的录像或没上传完的数据，关掉页面会丢失。",
+    mod_tendu:"Tendu 擦地", mod_plie:"Plié 蹲",
+    pos_first:"一位", pos_second:"二位", both:"双腿", posInfo:(p,a)=>"脚位：" + p + (a ? "（自动）" : ""),
+    pp_stand:"直立", pp_down:"下蹲", pp_bottom:"最低点", pp_up:"上升", lgGuide:"膝盖→脚尖参考线",
+    bendDeg:d=>`膝盖弯 ${d}°`, axBottom:"最低点", axUp:"起来", rpTitleP:"Plié 练习报告",
+    pPosLabel:"脚位", grpPlie:"Plié 标准", sPDemiMin:"Demi-plié 至少弯多少度", sGrandMin:"弯多少度以上算 grand plié",
+    sKneeTrack:"膝盖对准脚尖：至少往外打开（%）", sTilt:"上身倾斜：最多几度", sEven:"两腿弯曲差：最多几度",
+    n_kneesOver:"膝盖对准脚尖", h_kneesOver:"蹲下时膝盖往外打开，在脚尖正上方", c_kneesOver:"膝盖对准脚尖",
+    n_heelsDown:"脚跟踩住地板", h_heelsDown:"demi-plié 和二位 grand 脚跟都不能离地", c_heelsDown:"脚跟踩住",
+    n_upright:"上身立直", h_upright:"身体不要往一边歪", c_upright:"身体立直",
+    n_level:"胯放平", h_level:"两边胯一样高", c_level:"胯放平",
+    n_depth:"蹲的深度", c_depth:"再蹲深一点", n_kneeTrack:"膝盖全程对准脚尖", c_kneeTrack:"膝盖对准脚尖",
+    n_heels:"脚跟", c_heels:"脚跟踩住", n_uprightRep:"全程上身立直", c_uprightRep:"身体立直",
+    n_levelRep:"全程胯放平", c_levelRep:"胯放平", n_even:"两边蹲得一样低", c_even:"两边一样低",
+    n_smooth:"下去和起来一样慢", c_smooth:"下去和起来一样慢",
+    whenBent:"蹲下时检查", standFirst:"先站直几秒", kneeOk:"对准", kneeIn:"往里扣", toesHidden:"看不到脚尖方向",
+    heelsOn:"踩住", heelsUp:"离地了", heelsAllowed:"grand 到底可以抬",
+    depthDeg:d=>`蹲了 ${d}°`, tooShallow:d=>`只蹲了 ${d}°，再深一点`, kneesInPct:p=>`${p} 的时间膝盖往里扣`,
+    heelsGood:"脚跟踩得很稳", heelsUpDemi:"demi-plié 时脚跟离地了", heelsUp2nd:"二位脚跟离地了", heelsEarly:"脚跟抬得太早",
+    speedOk:x=>"下 / 上：" + x, fastDown:x=>"下去太快：" + x, fastUp:x=>"起来太快：" + x,
+    t_depth:"demi-plié 要蹲到膝盖明显弯曲，同时脚跟还踩得住地板。", t_kneeTrack:"蹲之前先把膝盖和脚尖对齐，想象膝盖要往小脚趾的方向去。",
+    t_heels:"想象脚跟被粘在地板上；demi-plié 只蹲到脚跟还能踩住的深度。", t_uprightRep:"头顶像被一根线往上提，上身像电梯一样垂直上下。",
+    t_levelRep:"两边胯骨保持一样高，可以对着镜子检查。", t_even:"两条腿同时弯、同时伸直，重心放在两只脚中间。",
+    t_smooth:"数着拍子：下去 2 拍，起来 2 拍，不要掉下去再弹起来。",
+    lTitleP:"Plié 蹲", lIntroP:"膝盖往外打开、对准脚尖，慢慢蹲下再慢慢站起来。先做 demi-plié（半蹲），再做 grand plié（深蹲）。",
+    tipP_knees:"膝盖始终对准脚尖，不要往里扣", tipP_upright:"上身立直，像电梯一样直上直下",
+    tipP_first:"demi-plié 脚跟不离地；grand plié 到最低时脚跟才可以抬起", tipP_second:"二位不管 demi 还是 grand，脚跟都一直踩住地板",
+    sp_first_1:"一位站好，脚跟并拢，脚尖向外", sp_first_2:"膝盖往外打开，对准脚尖慢慢蹲", sp_first_3:"Demi-plié 最低点：脚跟还踩在地上",
+    sp_first_4:"Grand plié：继续往下，最后脚跟才离地", sp_first_5:"慢慢起来：先落脚跟，再伸直膝盖",
+    sp_second_1:"二位站好，两脚分开一个脚长", sp_second_2:"膝盖往外打开，对准脚尖慢慢蹲", sp_second_3:"Demi-plié 最低点：脚跟踩住地板",
+    sp_second_4:"Grand plié：大腿接近水平，脚跟一直不离地", sp_second_5:"慢慢起来，膝盖完全伸直",
+    mp_kneesIn_bad:"膝盖往里扣", mp_kneesIn_good:"膝盖对准脚尖", mp_heelsUp_bad:"demi 时脚跟离地", mp_heelsUp_good:"脚跟踩住",
+    mp_tilt_bad:"身体歪了", mp_tilt_good:"上身立直",
     navLearn:"学一学", navPractice:"练一练",
     lTitle:"Tendu 擦地", lIntro:"脚沿着地板擦出去，脚背慢慢绷直，再原路收回来。先看小舞者怎么做，再去练一练吧！",
     dir_devant:"向前 devant", dir_seconde:"向旁 à la seconde", dir_derriere:"向后 derrière",
@@ -742,6 +807,38 @@ const I18N = {
     recUnsupported:"This browser can't record. Use Chrome or Edge on a computer.", recFail:m=>"Couldn't record: " + m,
     recDone:"Recording finished. Save it or analyze it again under Recordings.",
     leaveWarn:"You have unsaved recordings or data still uploading that will be lost.",
+    mod_tendu:"Tendu", mod_plie:"Plié",
+    pos_first:"1st position", pos_second:"2nd position", both:"Both legs", posInfo:(p,a)=>"Position: " + p + (a ? " (auto)" : ""),
+    pp_stand:"Standing", pp_down:"Going down", pp_bottom:"Bottom", pp_up:"Coming up", lgGuide:"Knee → toe guide",
+    bendDeg:d=>`knees ${d}°`, axBottom:"Bottom", axUp:"Back up", rpTitleP:"Plié Practice Report",
+    pPosLabel:"Position", grpPlie:"Plié standards", sPDemiMin:"Demi-plié: bend at least", sGrandMin:"Counts as grand plié from",
+    sKneeTrack:"Knees over toes: open at least (%)", sTilt:"Body lean: at most", sEven:"Difference between knees: at most",
+    n_kneesOver:"Knees over toes", h_kneesOver:"When bending, knees open outward right over the toes", c_kneesOver:"Knees over your toes",
+    n_heelsDown:"Heels down", h_heelsDown:"Heels stay down in demi-plié and in grand plié in 2nd", c_heelsDown:"Keep your heels down",
+    n_upright:"Upright", h_upright:"Don't lean to one side", c_upright:"Stand up straight",
+    n_level:"Hips level", h_level:"Both hips at the same height", c_level:"Keep your hips level",
+    n_depth:"Depth", c_depth:"Bend a little deeper", n_kneeTrack:"Knees over toes throughout", c_kneeTrack:"Knees over your toes",
+    n_heels:"Heels", c_heels:"Keep your heels down", n_uprightRep:"Upright throughout", c_uprightRep:"Stand up straight",
+    n_levelRep:"Hips level throughout", c_levelRep:"Keep your hips level", n_even:"Both knees bend evenly", c_even:"Bend both knees evenly",
+    n_smooth:"Same speed down and up", c_smooth:"Go down and up at the same speed",
+    whenBent:"Checked when bending", standFirst:"Stand straight for a moment", kneeOk:"Aligned", kneeIn:"Falling in", toesHidden:"Can't see the toes",
+    heelsOn:"Down", heelsUp:"Lifted", heelsAllowed:"OK at the bottom of grand",
+    depthDeg:d=>`Bent ${d}°`, tooShallow:d=>`Only ${d}°, go deeper`, kneesInPct:p=>`Knees fell in ${p} of the time`,
+    heelsGood:"Heels stayed down", heelsUpDemi:"Heels lifted in demi-plié", heelsUp2nd:"Heels lifted in 2nd", heelsEarly:"Heels lifted too early",
+    speedOk:x=>"Down / up: " + x, fastDown:x=>"Went down too fast: " + x, fastUp:x=>"Came up too fast: " + x,
+    t_depth:"In demi-plié, bend the knees clearly while the heels stay on the floor.", t_kneeTrack:"Line up knees and toes before bending; send the knees toward the little toes.",
+    t_heels:"Imagine the heels are glued to the floor; in demi-plié bend only as far as the heels can stay down.", t_uprightRep:"Imagine a string lifting the top of the head; move straight down and up like an elevator.",
+    t_levelRep:"Keep both hip bones at the same height; check in a mirror.", t_even:"Bend and straighten both legs together, weight between the feet.",
+    t_smooth:"Count it: two counts down, two counts up. Don't drop and bounce.",
+    lTitleP:"Plié", lIntroP:"Open the knees over the toes, bend slowly, then rise slowly. First demi-plié (half bend), then grand plié (full bend).",
+    tipP_knees:"Knees always over the toes, never falling in", tipP_upright:"Keep the body upright, straight down and up like an elevator",
+    tipP_first:"Heels stay down in demi-plié; in grand plié they lift only at the very bottom", tipP_second:"In 2nd, heels stay down in both demi and grand plié",
+    sp_first_1:"Stand in 1st: heels together, toes out", sp_first_2:"Open the knees over the toes and bend slowly", sp_first_3:"Bottom of demi-plié: heels still down",
+    sp_first_4:"Grand plié: keep going; heels lift only at the end", sp_first_5:"Rise slowly: heels down first, then straighten",
+    sp_second_1:"Stand in 2nd, feet a foot-length apart", sp_second_2:"Open the knees over the toes and bend slowly", sp_second_3:"Bottom of demi-plié: heels down",
+    sp_second_4:"Grand plié: thighs nearly level, heels stay down", sp_second_5:"Rise slowly until the knees are straight",
+    mp_kneesIn_bad:"Knees falling in", mp_kneesIn_good:"Knees over toes", mp_heelsUp_bad:"Heels up in demi", mp_heelsUp_good:"Heels down",
+    mp_tilt_bad:"Leaning", mp_tilt_good:"Upright",
     navLearn:"Learn", navPractice:"Practice",
     lTitle:"Tendu", lIntro:"Brush the foot out along the floor, stretch it to a point, then bring it back the same way. Watch the little dancer first, then give it a try!",
     dir_devant:"Front · devant", dir_seconde:"Side · à la seconde", dir_derriere:"Back · derrière",
@@ -821,9 +918,25 @@ const LEGS = {
   right: { hip:24, knee:26, ankle:28, heel:30, toe:32 },
 };
 const DIRS = { devant:"Tendu devant", seconde:"Tendu à la seconde", derriere:"Tendu derrière" };
-const PHASES = { "-1":["ph_off","--ph-off"], "0":["ph_flat","--ph-flat"], "1":["ph_demi","--ph-demi"], "2":["ph_point","--ph-point"] };
-const LIVE = ["workKnee", "supportKnee", "hips", "toe"];                                     // every frame
-const REP  = ["floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close"];  // once per tendu
+// "first-demi" → "一位 · Demi-plié"; tendu directions keep their French names
+const dirLabel = d => !d ? t("dirUnknown") : d.includes("-") ? t("pos_" + d.split("-")[0]) + " · " + (d.endsWith("grand") ? "Grand plié" : "Demi-plié") : DIRS[d];
+// foot phases for tendu (-1..2) and body phases for plié (10..13) share one colour map
+const PHASES = { "-1":["ph_off","--ph-off"], "0":["ph_flat","--ph-flat"], "1":["ph_demi","--ph-demi"], "2":["ph_point","--ph-point"],
+                 "10":["pp_stand","--ph-flat"], "11":["pp_down","--ph-demi"], "12":["pp_bottom","--ph-point"], "13":["pp_up","--ph-up"] };
+// each move: checks shown every frame (live), checks judged once per rep, and what the report rates
+const MODS = {
+  tendu: { live: ["workKnee", "supportKnee", "hips", "toe"],
+           rep:  ["floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close"],
+           rate: ["workKnee", "supportKnee", "hips", "floor", "path", "outDemi", "lift", "point", "backDemi", "heelDown", "close"],
+           dirs: ["devant", "seconde", "derriere"] },
+  plie:  { live: ["kneesOver", "heelsDown", "upright", "level"],
+           rep:  ["depth", "kneeTrack", "heels", "uprightRep", "levelRep", "even", "smooth"],
+           rate: ["depth", "kneeTrack", "heels", "uprightRep", "levelRep", "even", "smooth"],
+           dirs: ["first-demi", "first-grand", "second-demi", "second-grand"] },
+};
+let mod = (() => { try { return localStorage.getItem("ballet-module") === "plie" ? "plie" : "tendu"; } catch { return "tendu"; } })();
+let LIVE = MODS[mod].live, REP = MODS[mod].rep;
+const rateKeys = m => MODS[m || "tendu"].rate;
 
 const $ = id => document.getElementById(id);
 const video = $("video"), canvas = $("overlay"), ctx = canvas.getContext("2d"), stage = $("stage");
@@ -838,12 +951,13 @@ const SL = {
   liftMin:[v=>v/100, v=>v+"%"], liftMax:[v=>v/100, v=>v+"%"], heelDownMin:[v=>v/100, v=>v+"%"], demiMin:[v=>v/100, v=>v+"%"],
   kneeMin:[v=>v, v=>v+"°"], hipMax:[v=>v, v=>v+"°"], toeMax:[v=>v/100, v=>v+"%"], pathMax:[v=>v/100, v=>v+"%"],
   closeMax:[v=>v, v=>v.toFixed(1)],
+  pDemiMin:[v=>v, v=>v+"°"], grandMin:[v=>v, v=>v+"°"], kneeTrackMin:[v=>v/100, v=>v+"%"], tiltMax:[v=>v, v=>v+"°"], evenMax:[v=>v, v=>v+"°"],
 };
 function readCfg(){
   for (const [id, [conv, show]] of Object.entries(SL)){ const v = +$(id).value; cfg[id] = conv(v); $(id + "Out").textContent = show(v); }
-  cfg.leg = $("leg").value; cfg.dir = $("dir").value; cfg.voice = $("voice").checked;
+  cfg.leg = $("leg").value; cfg.dir = $("dir").value; cfg.voice = $("voice").checked; cfg.pPos = $("pPos").value;
 }
-[...Object.keys(SL), "leg", "dir", "voice"].forEach(id => $(id).addEventListener("input", readCfg));
+[...Object.keys(SL), "leg", "dir", "voice", "pPos"].forEach(id => $(id).addEventListener("input", readCfg));
 readCfg();
 $("speed").addEventListener("change", () => { if (mode === "file") video.playbackRate = +$("speed").value; });
 
@@ -857,11 +971,13 @@ function buildList(ul, keys, withHint){
   }
   return els;
 }
-const liveEls = buildList($("liveChecks"), LIVE, true);
-const repEls = buildList($("repChecks"), REP, false);
+let liveEls = buildList($("liveChecks"), LIVE, true);
+let repEls = buildList($("repChecks"), REP, false);
 function labelLists(){
   for (const k of LIVE){ liveEls[k].querySelector(".name").textContent = t("n_" + k); liveEls[k].querySelector(".hint").textContent = t("h_" + k); }
   for (const k of REP) repEls[k].querySelector(".name").textContent = t("n_" + k);
+  const P = mod === "plie";
+  $("axS").textContent = t("axStart"); $("axF").textContent = t(P ? "axBottom" : "axFar"); $("axC").textContent = t(P ? "axUp" : "axClose");
 }
 function setRow(els, key, m){ const [s, val] = fmt(m); const li = els[key]; li.dataset.s = s; li.querySelector(".val").textContent = val; }
 
@@ -880,7 +996,7 @@ function applyLang(){
   if (typeof renderAcct === "function"){ renderAcct(); renderHistList(); renderGate(); }
   if (typeof renderLearn === "function" && document.body.classList.contains("view-learn")) renderLearn();
   if (document.body.classList.contains("show-report")) renderReport(reportCtx);
-  if (lastDir !== undefined) $("dirChip").querySelector("span").textContent = lastDir ? DIRS[lastDir] : t("dirUnknown");
+  if (lastDir !== undefined) $("dirChip").querySelector("span").textContent = dirLabel(lastDir);
 }
 document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
   lang = b.dataset.lang;
@@ -1089,7 +1205,8 @@ const pct = e => Math.round(e * 100) + "%";
 // ---------- per-frame analysis ----------
 let workSide = "right", view = "front", facing = 0, lastLeg = null, lastRep = null, lastDir;
 const VIS = 0.5;
-function analyze(lm, wlm){
+function analyze(lm, wlm){ return mod === "plie" ? analyzePlie(lm, wlm) : analyzeTendu(lm, wlm); }
+function analyzeTendu(lm, wlm){
   ctx.clearRect(0, 0, W(), H());
   if (!lm){ LIVE.forEach(k => setRow(liveEls, k, ["na", "noPerson"])); setPhaseChip(null); return; }
 
@@ -1143,7 +1260,7 @@ function analyze(lm, wlm){
   if (!(extended || rep)) out.toe = ["na", "whenOut"];
   else if (ph === null) out.toe = ["na", "footUnclear"];
   else out.toe = ph === -1 ? ["bad", "lifted", pct(toeLift)] : ["ok", "onFloor"];
-  setPhaseChip(ph, heelH);
+  setPhaseChip(ph, heelH == null ? "" : t("heel", heelH.toFixed(2)));
 
   trackRep({ t: video.currentTime, lean: workLean, ph, toe: { x: work.toe.x, y: work.toe.y }, toeVis: work.toe.v }, out, work, sup, legLen, footRef);
 
@@ -1154,14 +1271,14 @@ function analyze(lm, wlm){
   voice(out);
 }
 
-function setPhaseChip(ph, heelH){
+function setPhaseChip(ph, extra){
   const chip = $("phaseChip");
   if (ph === null){ chip.style.setProperty("--c", "#888"); chip.querySelector("span").textContent = t("chipUnknown"); chip.querySelector("small").textContent = ""; return; }
   const [key, tok] = PHASES[ph];
   chip.style.setProperty("--c", `var(${tok})`);
   phaseColor = css(tok);
   chip.querySelector("span").textContent = t(key);
-  chip.querySelector("small").textContent = t("heel", heelH.toFixed(2));
+  chip.querySelector("small").textContent = extra || "";
 }
 
 // ---------- drawing ----------
@@ -1329,7 +1446,7 @@ function finishRep(work, sup, legLen, footRef, closedNormally){
   const segs = res.V ? compressSegs(res.V) : null;
   const peak = res.V ? res.mi / Math.max(1, res.V.length - 1) : 0;
   const measured = [...r.seen].filter(k => k !== "toe").concat(REP.filter(k => res.R[k][0] !== "na"));
-  const rec = { n: reps.length + 1, side: r.side, dir: res.dir, errors: [...r.errors], R: res.R, segs, peak, measured,
+  const rec = { module: "tendu", n: reps.length + 1, side: r.side, dir: res.dir, errors: [...r.errors], R: res.R, segs, peak, measured,
                 at: Date.now(), t0: r.start, t1: video.currentTime,
                 snaps: { start: r.snapStart || null, far: r.hasFar ? farC.toDataURL("image/jpeg", 0.72) : null, close: null } };
   reps.push(rec);
@@ -1344,7 +1461,7 @@ function finishRep(work, sup, legLen, footRef, closedNormally){
   lastDir = res.dir;
   showRep(lastRep);
   renderReps();
-  $("dirChip").querySelector("span").textContent = res.dir ? DIRS[res.dir] : t("dirUnknown");
+  $("dirChip").querySelector("span").textContent = dirLabel(res.dir);
   const firstBad = REP.find(k => res.R[k][0] === "bad");
   if (firstBad) say(t("c_" + firstBad), true);
 }
@@ -1370,7 +1487,7 @@ function fillTimeline(tl, segs, peak){
 }
 function showRep({ R, dir, note, segs, peak, side }){
   $("repEmpty").hidden = true; $("repBody").hidden = false;
-  $("repTitle").textContent = (dir ? DIRS[dir] : t("dirUnknown")) + " · " + t(side);
+  $("repTitle").textContent = dirLabel(dir) + " · " + t(side);
   $("repNote").textContent = note ? t(note[0], note[1]) : "";
   $("repNote").hidden = !note;
   for (const k of REP) setRow(repEls, k, R[k]);
@@ -1385,7 +1502,7 @@ function renderReps(){
   reps.slice().reverse().slice(0, 40).forEach((r, i) => {
     const li = document.createElement("li");
     const head = document.createElement("span");
-    head.textContent = t("repLine", reps.length - i, r.dir ? DIRS[r.dir].replace("Tendu ", "") : "?", t(r.side));
+    head.textContent = t("repLine", reps.length - i, r.dir ? dirLabel(r.dir).replace("Tendu ", "") : "?", t(r.side));
     const body = document.createElement("span");
     if (!r.errors.length){ body.className = "good"; body.textContent = t("allCorrect"); }
     else { body.className = "err"; body.textContent = r.errors.map(k => t("n_" + k)).join(t("sep")); }
@@ -1422,7 +1539,7 @@ const LM_NAMES = ["nose","left_eye_inner","left_eye","left_eye_outer","right_eye
   "mouth_left","mouth_right","left_shoulder","right_shoulder","left_elbow","right_elbow","left_wrist","right_wrist","left_pinky","right_pinky",
   "left_index","right_index","left_thumb","right_thumb","left_hip","right_hip","left_knee","right_knee","left_ankle","right_ankle",
   "left_heel","right_heel","left_foot_index","right_foot_index"];
-const PH_CODE = { "-1":"toe_off", "0":"flat", "1":"demi_pointe", "2":"point" };
+const PH_CODE = { "-1":"toe_off", "0":"flat", "1":"demi_pointe", "2":"point", "10":"standing", "11":"going_down", "12":"bottom", "13":"coming_up" };
 const MAX_FRAMES = 60000;                                // about 30 minutes at 30 fps
 let frames = [], srcId = 0, sessionId = uuid(), sessionStart = null, sessionDancer = null;
 function recordFrame(lm, wlm, ph, lean, heelH){
@@ -1476,8 +1593,8 @@ $("exportFrames").addEventListener("click", () => {
 });
 $("exportReps").addEventListener("click", () => {
   if (!reps.length){ setStatus("noRepsForReport"); return; }
-  const keys = ["workKnee", "supportKnee", "hips", ...REP];
-  const head = ["tendu","clock_time","video_start_s","video_end_s","direction","working_leg","all_correct"];
+  const keys = rateKeys(mod);
+  const head = ["rep","clock_time","video_start_s","video_end_s","direction","working_leg","all_correct"];
   for (const k of keys) head.push(k, k + "_detail");
   const rows = [head.join(",")];
   for (const r of reps){
@@ -1493,7 +1610,6 @@ $("exportReps").addEventListener("click", () => {
 
 // ---------- history (long-term trend) ----------
 const HKEY = "tendu-history";
-const RATE_KEYS = ["workKnee", "supportKnee", "hips", ...REP];
 function loadHistory(){ try { return JSON.parse(localStorage.getItem(HKEY)) || []; } catch { return []; } }
 function sessionSummary(){
   const dirs = {}, fails = {}, meas = {};
@@ -1503,7 +1619,7 @@ function sessionSummary(){
     for (const e of r.errors) fails[e] = (fails[e] || 0) + 1;
     for (const m of r.measured) meas[m] = (meas[m] || 0) + 1;
   }
-  return { id: sessionId, start: sessionStart, end: reps.length ? reps[reps.length - 1].at : null,
+  return { id: sessionId, module: mod, start: sessionStart, end: reps.length ? reps[reps.length - 1].at : null,
            total: reps.length, good: reps.filter(r => !r.errors.length).length, dirs, fails, meas };
 }
 function saveHistory(){
@@ -1528,7 +1644,8 @@ async function openReport(ctx){
     if (!reps.length){ setStatus("noRepsForReport"); return; }
     saveHistory();
     const useCloud = cloudReady() && sessionDancer === cloud.dancerId;
-    ctx = { reps, sid: sessionId, start: sessionStart || reps[0].at, cloud: useCloud, hist: useCloud ? await cloudHistory() : loadHistory() };
+    ctx = { reps, module: mod, sid: sessionId, start: sessionStart || reps[0].at, cloud: useCloud,
+            hist: useCloud ? await cloudHistory() : loadHistory().filter(h => (h.module || "tendu") === mod) };
   }
   reportCtx = ctx;
   renderReport(ctx);
@@ -1567,25 +1684,25 @@ function renderReport(ctx = reportCtx){
   const P = v => Math.round(v * 100) + "%";
   const start = sessionStart || reps[0].at, end = reps[n - 1].at;
   const lc = reps.filter(r => r.side === "left").length;
-  const dirName = d => d ? DIRS[d] : t("dirUnknown");
+  const dirName = dirLabel, M = ctx.module || "tendu";
   let h = `<div class="rp-bar no-print"><button id="rpBack">${esc(t("rpBack"))}</button><button class="primary" id="rpPrint">${esc(t("rpPrint"))}</button></div>`;
-  h += `<article class="rp"><h1>${esc(t("rpTitle"))}</h1>`;
-  h += `<p class="sub">${esc(fDate(start))} · ${esc(fTime(start))}–${esc(fTime(end))} · ${esc(t("minutes", Math.max(1, Math.round((end - start) / 60000))))} · ${esc(t("legsLine", lc, n - lc))}</p>`;
+  h += `<article class="rp"><h1>${esc(t(M === "plie" ? "rpTitleP" : "rpTitle"))}</h1>`;
+  h += `<p class="sub">${esc(fDate(start))} · ${esc(fTime(start))}–${esc(fTime(end))} · ${esc(t("minutes", Math.max(1, Math.round((end - start) / 60000))))} ${M === "plie" ? "" : "· " + esc(t("legsLine", lc, n - lc))}</p>`;
 
   // 1. summary
   h += `<h2>${esc(t("rpSummary"))}</h2><div class="rp-tiles">`;
   h += `<div class="tile"><div class="k">${esc(t("tTotal"))}</div><div class="v">${n}</div></div>`;
   h += `<div class="tile"><div class="k">${esc(t("tGood"))}</div><div class="v">${good}<small>${P(good / n)}</small></div></div>`;
-  for (const d of ["devant", "seconde", "derriere"]){
+  for (const d of MODS[M].dirs){
     const rs = reps.filter(r => r.dir === d);
     if (!rs.length) continue;
     const g = rs.filter(r => !r.errors.length).length;
-    h += `<div class="tile"><div class="k">${esc(DIRS[d])}</div><div class="v">${P(g / rs.length)}<small>${esc(t("dirTile", rs.length, g))}</small></div></div>`;
+    h += `<div class="tile"><div class="k">${esc(dirLabel(d))}</div><div class="v">${P(g / rs.length)}<small>${esc(t("dirTile", rs.length, g))}</small></div></div>`;
   }
   h += `</div>`;
 
   // 2. what to work on
-  const stats = RATE_KEYS.map(k => {
+  const stats = rateKeys(M).map(k => {
     const meas = reps.filter(r => r.measured.includes(k)).length;
     const fails = reps.filter(r => r.errors.includes(k)).length;
     return { k, meas, fails, rate: meas ? (meas - fails) / meas : null };
@@ -1619,7 +1736,7 @@ function renderReport(ctx = reportCtx){
     h += `<div class="heat-wrap"><p class="cap">${esc(t("trendTable"))}</p><table class="heat"><tr><th></th>`;
     for (const c of cols) h += `<th>${esc(c.id === sessionId ? t("thisSession") : fShort(c.start))}</th>`;
     h += `</tr>`;
-    for (const k of RATE_KEYS){
+    for (const k of rateKeys(M)){
       h += `<tr><td>${esc(t("n_" + k))}</td>`;
       for (const c of cols){
         const m = (c.meas || {})[k] || 0, f = (c.fails || {})[k] || 0;
@@ -1644,7 +1761,7 @@ function renderReport(ctx = reportCtx){
     h += `<span class="${ok ? "ok" : "bad"}">${ok ? "✓ " + esc(t("allPassed")) : "✗ " + r.errors.length}</span></div>`;
     if (r.snaps.start || r.snaps.far || r.snaps.close){
       h += `<div class="snaps">`;
-      for (const [key, cap] of [["start", "snapStart"], ["far", "snapFar"], ["close", "snapClose"]])
+      for (const [key, cap] of (M === "plie" ? [["start", "snapStart"], ["far", "axBottom"], ["close", "axUp"]] : [["start", "snapStart"], ["far", "snapFar"], ["close", "snapClose"]]))
         h += `<figure>${r.snaps[key] ? `<img src="${r.snaps[key]}" alt="${esc(t(cap))}">` : ""}<figcaption>${esc(t(cap))}</figcaption></figure>`;
       h += `</div>`;
     }
@@ -1897,14 +2014,14 @@ function dataURLtoBlob(u){
 async function uploadSummary(s){
   const { error } = await cloud.sb.from("sessions").upsert({
     id: s.id, dancer_id: s.dancerId, started_at: iso(s.start), ended_at: s.end ? iso(s.end) : null,
-    total: s.total, good: s.good, summary: { dirs: s.dirs, fails: s.fails, meas: s.meas } }, { onConflict: "id" });
+    total: s.total, good: s.good, module: s.module || "tendu", summary: { dirs: s.dirs, fails: s.fails, meas: s.meas } }, { onConflict: "id" });
   if (error) throw error;
 }
 async function uploadRep(rec){
   const sb = cloud.sb;
   // make sure the session row exists before the tendu that points at it
   let { error } = await sb.from("sessions").upsert(
-    { id: rec.sessionKey, dancer_id: rec.dancerId, started_at: iso(rec.sessionStart || rec.at) }, { onConflict: "id", ignoreDuplicates: true });
+    { id: rec.sessionKey, dancer_id: rec.dancerId, module: rec.module || "tendu", started_at: iso(rec.sessionStart || rec.at) }, { onConflict: "id", ignoreDuplicates: true });
   if (error) throw error;
   const keyframes = {};
   for (const k of ["start", "far", "close"]){
@@ -1916,18 +2033,18 @@ async function uploadRep(rec){
   }
   ({ error } = await sb.from("reps").upsert({
     id: rec.id, session_id: rec.sessionKey, dancer_id: rec.dancerId, n: rec.n, at: iso(rec.at),
-    direction: rec.dir, side: rec.side, all_correct: !rec.errors.length, errors: rec.errors, measured: rec.measured,
+    module: rec.module || "tendu", direction: rec.dir, side: rec.side, all_correct: !rec.errors.length, errors: rec.errors, measured: rec.measured,
     results: rec.R, segs: rec.segs, peak: rec.peak, keyframes, coords: rec.coords }, { onConflict: "id" }));
   if (error) throw error;
 }
 
 // --- history from the cloud ---
 async function cloudHistory(){
-  const { data, error } = await cloud.sb.from("sessions").select("id,started_at,ended_at,total,good,summary")
-    .eq("dancer_id", cloud.dancerId).order("started_at", { ascending: true }).limit(200);
-  if (error){ console.warn(error); return loadHistory(); }
+  const { data, error } = await cloud.sb.from("sessions").select("id,module,started_at,ended_at,total,good,summary")
+    .eq("dancer_id", cloud.dancerId).eq("module", mod).order("started_at", { ascending: true }).limit(200);
+  if (error){ console.warn(error); return loadHistory().filter(h => (h.module || "tendu") === mod); }
   const hs = (data || []).filter(r => r.total > 0).map(r => ({ id: r.id, start: Date.parse(r.started_at), end: r.ended_at ? Date.parse(r.ended_at) : null,
-    total: r.total, good: r.good, ...(r.summary || {}) }));
+    module: r.module || "tendu", total: r.total, good: r.good, ...(r.summary || {}) }));
   if (reps.length && sessionDancer === cloud.dancerId){                 // include the session in progress
     const cur = sessionSummary(), i = hs.findIndex(h => h.id === cur.id);
     if (i >= 0) hs[i] = cur; else hs.push(cur);
@@ -1975,7 +2092,7 @@ async function openPastReport(h, btn){
       segs: r.segs, peak: r.peak || 0, measured: r.measured || [], at: Date.parse(r.at),
       snaps: { start: kf(r, "start"), far: kf(r, "far"), close: kf(r, "close") } }));
     if (!list.length){ setAcctMsg("historyEmpty"); return; }
-    await openReport({ reps: list, sid: h.id, start: h.start, cloud: true, hist: await cloudHistory() });
+    await openReport({ reps: list, module: h.module || mod, sid: h.id, start: h.start, cloud: true, hist: await cloudHistory() });
   } catch(e){ setAcctMsg("authErr", e.message || String(e)); }
   finally { btn.disabled = false; }
 }
@@ -2074,21 +2191,35 @@ function animAt(sec){
   if (tt < 5.7) return [1 - ease((tt - 3.7) / 2), "back"];
   return [0, "closed"];
 }
-function drawAnim(e, stage){
+let learnPos = "first";
+function drawAnim(e, stage, kind){
+  if (mod === "plie"){
+    $("animStage").innerHTML = plieSVG(learnPos, e, { guide: true, alt: t("lTitleP") }).svg;
+    const ph = PSTAGE_PH[stage];
+    $("phaseTrack").querySelectorAll("span").forEach(sp => sp.classList.toggle("on", +sp.dataset.ph === ph));
+    $("animCaption").textContent = (kind === "grand" ? "Grand plié" : "Demi-plié") + " · " + t(PHASES[ph][0]);
+    return;
+  }
   const { svg, ph } = poseSVG(learnDir, e, { label: true, alt: t("lTitle") });
   $("animStage").innerHTML = svg;
   $("phaseTrack").querySelectorAll("span").forEach(sp => sp.classList.toggle("on", +sp.dataset.ph === ph && stage !== "closed"));
   $("animCaption").textContent = t("l_" + stage) + (stage === "closed" ? "" : " · " + t(PHASES[ph][0]));
 }
+const pausedFrame = () => mod === "plie" ? drawAnim(48, "bottom", "demi") : drawAnim(1, "hold");
 function animLoop(now){
   if (!document.body.classList.contains("view-learn") || !animOn){ animRaf = 0; return; }
-  if (now - animLast > 33){ animLast = now; const [e, st] = animAt((now - animT0) / 1000); drawAnim(e, st); }
+  if (now - animLast > 33){
+    animLast = now;
+    const sec = (now - animT0) / 1000;
+    if (mod === "plie"){ const [e, st] = plieAnimAt(sec); drawAnim(e, st, (sec % PCYCLE) < 4.6 ? "demi" : "grand"); }
+    else { const [e, st] = animAt(sec); drawAnim(e, st); }
+  }
   animRaf = requestAnimationFrame(animLoop);
 }
 function startAnim(){ if (animOn && !animRaf) animRaf = requestAnimationFrame(animLoop); }
 $("animToggle").addEventListener("click", () => {
   animOn = !animOn;
-  if (animOn){ animT0 = performance.now(); startAnim(); } else drawAnim(1, "hold");
+  if (animOn){ animT0 = performance.now(); startAnim(); } else pausedFrame();
   $("animToggle").textContent = t(animOn ? "lPause" : "lPlay");
 });
 
@@ -2096,15 +2227,25 @@ const STEP_E = [0, 0.18, 0.5, 1, 0.18], STEP_ARROW = [null, "out", null, null, "
 const MISTAKES = { devant: ["bentKnee", "toeLift", "flatPoint"], seconde: ["bentKnee", "hipHike", "toeLift", "flatPoint"], derriere: ["bentKnee", "toeLift", "flatPoint"] };
 const FOCUS = { bentKnee: "knee", toeLift: "foot", flatPoint: "heel", hipHike: "hip" };
 function renderLearn(){
-  document.querySelectorAll(".dir-tabs button").forEach(b => {
-    b.textContent = t("dir_" + b.dataset.dir);
-    b.setAttribute("aria-selected", String(b.dataset.dir === learnDir));
-  });
-  $("viewBadge").textContent = t(VIEWS[learnDir].side ? "viewSide" : "viewFront");
-  $("phaseTrack").innerHTML = [0, 1, 2].map(p => `<span data-ph="${p}" style="--c:var(${PHASES[p][1]})">${esc(t(PHASES[p][0]))}</span>`).join("");
+  const P = mod === "plie";
+  $("learnTitle").textContent = t(P ? "lTitleP" : "lTitle");
+  $("learnIntro").textContent = t(P ? "lIntroP" : "lIntro");
+  const tabs = P ? ["first", "second"] : ["devant", "seconde", "derriere"], cur = P ? learnPos : learnDir;
+  $("dirTabs").innerHTML = tabs.map(d => `<button role="tab" data-dir="${d}" aria-selected="${d === cur}">${esc(t((P ? "pos_" : "dir_") + d))}</button>`).join("");
+  $("viewBadge").textContent = t(P || !VIEWS[learnDir].side ? "viewFront" : "viewSide");
+  $("phaseTrack").innerHTML = (P ? [10, 11, 12, 13] : [0, 1, 2]).map(p => `<span data-ph="${p}" style="--c:var(${PHASES[p][1]})">${esc(t(PHASES[p][0]))}</span>`).join("");
   $("animToggle").textContent = t(animOn ? "lPause" : "lPlay");
-  if (!animOn) drawAnim(1, "hold");
-  $("tipsList").innerHTML = ["tip_knees", "tip_floor", "tip_" + learnDir].map(k => `<li>${esc(t(k))}</li>`).join("");
+  if (!animOn) pausedFrame();
+  $("tipsList").innerHTML = (P ? ["tipP_knees", "tipP_upright", "tipP_" + learnPos] : ["tip_knees", "tip_floor", "tip_" + learnDir]).map(k => `<li>${esc(t(k))}</li>`).join("");
+  if (P){
+    $("stepsRow").innerHTML = PLIE_STEPS.map(([b, arrow], i) => `<div class="step">${plieSVG(learnPos, b, { tight: true, arrow, guide: i === 1 || i === 2, alt: t(`sp_${learnPos}_${i + 1}`) }).svg}<span class="n">${i + 1}</span><p>${esc(t(`sp_${learnPos}_${i + 1}`))}</p></div>`).join("");
+    $("mistakesGrid").style.setProperty("--cols", 3);
+    $("mistakesGrid").innerHTML = PLIE_MISTAKES.map(([err, focus, b]) => `<div class="mistake">
+      <figure>${plieSVG(learnPos, b, { tight: true, err, mark: "bad", focus, guide: err === "kneesIn", alt: t(`mp_${err}_bad`) }).svg}<figcaption class="bad">${esc(t(`mp_${err}_bad`))}</figcaption></figure>
+      <figure>${plieSVG(learnPos, b, { tight: true, mark: "good", focus, guide: err === "kneesIn", alt: t(`mp_${err}_good`) }).svg}<figcaption class="good">${esc(t(`mp_${err}_good`))}</figcaption></figure>
+    </div>`).join("");
+    return;
+  }
   $("stepsRow").innerHTML = STEP_E.map((e, i) => `<div class="step">${poseSVG(learnDir, e, { tight: true, arrow: STEP_ARROW[i], alt: t(`s_${learnDir}_${i + 1}`) }).svg}<span class="n">${i + 1}</span><p>${esc(t(`s_${learnDir}_${i + 1}`))}</p></div>`).join("");
   $("mistakesGrid").style.setProperty("--cols", MISTAKES[learnDir].length === 4 ? 2 : 3);
   $("mistakesGrid").innerHTML = MISTAKES[learnDir].map(err => {
@@ -2115,9 +2256,282 @@ function renderLearn(){
     </div>`;
   }).join("");
 }
-document.querySelectorAll(".dir-tabs button").forEach(b => b.addEventListener("click", () => {
-  learnDir = b.dataset.dir; animT0 = performance.now(); renderLearn();
-}));
+$("dirTabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-dir]"); if (!b) return;
+  if (mod === "plie") learnPos = b.dataset.dir; else learnDir = b.dataset.dir;
+  animT0 = performance.now(); renderLearn();
+});
+
+// ---------- plié: per-frame checks (front view) ----------
+// Bend = 180° − knee angle, averaged over both legs. Leg length uses thigh + shin, which doesn't shrink when bending.
+// Knees over toes: a bent leg is a triangle hip–knee–ankle. With good turnout the knee bulges out toward the
+// toes by the full height that triangle should have (from the leg length learned while standing); a knee that
+// comes forward instead shows almost no bulge in a front view, and one that falls in bulges the wrong way.
+// Score = sideways bulge ÷ expected bulge: ≈1 over the toes, ≈0 forward, < 0 falling in.
+// The floor and the true leg length are learned while the knees are straight.
+let plieBase = null, pliePos = "first";
+function analyzePlie(lm, wlm){
+  ctx.clearRect(0, 0, W(), H());
+  if (!lm){ LIVE.forEach(k => setRow(liveEls, k, ["na", "noPerson"])); setPhaseChip(null); return; }
+  const L = {}, R = {};
+  for (const k of ["hip", "knee", "ankle", "heel", "toe"]){ L[k] = pt(lm, LEGS.left[k]); R[k] = pt(lm, LEGS.right[k]); }
+  const ls = pt(lm, 11), rs = pt(lm, 12);
+  const shMid = { x: (ls.x + rs.x) / 2, y: (ls.y + rs.y) / 2 }, hipMid = { x: (L.hip.x + R.hip.x) / 2, y: (L.hip.y + R.hip.y) / 2 };
+  const torso = dist(shMid, hipMid) || 1;
+  view = smooth("shw", dist(ls, rs) / torso) > 0.45 ? "front" : "side";
+  const ok = (...ps) => Math.min(...ps.map(p => p.v)) >= VIS;
+  const bendOf = (Lg, key) => ok(Lg.hip, Lg.knee, Lg.ankle) ? Math.max(0, 180 - smooth(key, angle(Lg.hip, Lg.knee, Lg.ankle))) : null;
+  const bendL = bendOf(L, "pAL"), bendR = bendOf(R, "pAR");
+  const bend = bendL != null && bendR != null ? (bendL + bendR) / 2 : (bendL ?? bendR);
+  const segLen = ((dist(L.hip, L.knee) + dist(L.knee, L.ankle)) + (dist(R.hip, R.knee) + dist(R.knee, R.ankle))) / 2 || 1;
+  const footRef = 0.27 * segLen;
+
+  // learn the floor and the straight-leg baseline while standing
+  if (bend != null && bend < 8 && ok(L.toe, R.toe, L.heel, R.heel)){
+    const floor = Math.max(L.toe.y, R.toe.y, L.heel.y, R.heel.y);
+    plieBase = plieBase ? { floor: plieBase.floor * 0.9 + floor * 0.1, seg: plieBase.seg * 0.9 + segLen * 0.1 } : { floor, seg: segLen };
+  }
+  // first or second position from how far apart the ankles are
+  if (ok(L.ankle, R.ankle)){
+    const gap = smooth("pGap", Math.abs(L.ankle.x - R.ankle.x) / segLen);
+    pliePos = cfg.pPos !== "auto" ? cfg.pPos : gap > 0.24 ? "second" : "first";
+  } else if (cfg.pPos !== "auto") pliePos = cfg.pPos;
+  $("legInfo").textContent = t("posInfo", t("pos_" + pliePos), cfg.pPos === "auto");
+
+  const out = {};
+  // knees over toes
+  const track = (Lg, b) => {
+    if (b == null || b < 15 || !plieBase || !ok(Lg.hip, Lg.knee, Lg.ankle, Lg.toe)) return null;
+    const toeSide = Lg.toe.x - Lg.ankle.x;
+    if (Math.abs(toeSide) < 0.03 * plieBase.seg) return null;            // toes point at the camera: can't tell
+    const dx = Lg.ankle.x - Lg.hip.x, dy = Lg.ankle.y - Lg.hip.y, D = Math.hypot(dx, dy) || 1;
+    let nx = -dy / D, ny = dx / D;                                        // unit normal to the hip–ankle line…
+    if (Math.sign(nx) !== Math.sign(toeSide)){ nx = -nx; ny = -ny; }      // …pointing toward the toes
+    const bulge = (Lg.knee.x - Lg.hip.x) * nx + (Lg.knee.y - Lg.hip.y) * ny;
+    const half = plieBase.seg / 2, expected = Math.sqrt(Math.max(0, half * half - (D / 2) ** 2));
+    if (expected < 0.06 * plieBase.seg) return null;                      // barely bent yet
+    return bulge / expected;
+  };
+  const kL = track(L, bendL), kR = track(R, bendR);
+  const kMin = kL == null ? kR : kR == null ? kL : Math.min(kL, kR);
+  out.kneesOver = kMin == null ? ["na", "whenBent"] : kMin >= cfg.kneeTrackMin ? ["ok", "kneeOk"] : ["bad", "kneeIn"];
+  // heels
+  let heelLift = null;
+  if (plieBase && ok(L.heel, R.heel)) heelLift = smooth("pHeel", Math.max(plieBase.floor - L.heel.y, plieBase.floor - R.heel.y) / footRef);
+  const heelAllowed = pliePos === "first" && bend != null && bend >= cfg.grandMin - 8;
+  if (heelLift == null) out.heelsDown = ["na", plieBase ? "footUnclear" : "standFirst"];
+  else if (heelLift <= cfg.demiH) out.heelsDown = ["ok", "heelsOn"];
+  else out.heelsDown = heelAllowed ? ["ok", "heelsAllowed"] : ["bad", "heelsUp"];
+  // upright: sideways lean of the shoulders-to-hips line
+  let tilt = null;
+  if (ok(ls, rs, L.hip, R.hip)){
+    tilt = smooth("pTilt", Math.abs(Math.atan2(shMid.x - hipMid.x, hipMid.y - shMid.y)) * 180 / Math.PI);
+    out.upright = [tilt <= cfg.tiltMax ? "ok" : "bad", "deg", tilt.toFixed(1) + "°"];
+  } else out.upright = ["na", "unclear"];
+  // hips level
+  let hipTilt = null;
+  if (view !== "front" || !ok(L.hip, R.hip)) out.level = ["na", "needFront"];
+  else {
+    hipTilt = smooth("pHips", Math.abs(Math.atan2(L.hip.y - R.hip.y, Math.abs(L.hip.x - R.hip.x))) * 180 / Math.PI);
+    out.level = [hipTilt <= cfg.hipMax ? "ok" : "bad", "deg", hipTilt.toFixed(1) + "°"];
+  }
+
+  const ph = trackPlie({ t: video.currentTime, bend, bendL, bendR, kMin, heelLift, heelAllowed, tilt, hipTilt, pos: pliePos,
+                         toe: { x: hipMid.x, y: hipMid.y }, toeVis: 1 });
+  setPhaseChip(bend == null ? null : ph, bend == null ? "" : t("bendDeg", Math.round(bend)));
+  for (const k of LIVE) setRow(liveEls, k, out[k]);
+  drawPlie(lm, L, R, out);
+  afterDraw();
+  recordFrame(lm, wlm, bend == null ? null : ph, bend, heelLift);
+  voice(out);
+}
+
+function drawPlie(lm, L, R, out){
+  const col = s => s === "ok" ? css("--ok") : s === "bad" ? css("--bad") : "rgba(255,255,255,.75)";
+  const lw = Math.max(3, W() / 220), neutral = "rgba(255,255,255,.55)";
+  const seg = (a, b, c, w = lw, dash) => { if (a.v < 0.3 || b.v < 0.3) return; ctx.setLineDash(dash || []); ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]); };
+  const P = i => pt(lm, i);
+  ctx.lineCap = "round"; ctx.lineJoin = "round"; trail = [];
+  [[11,13],[13,15],[12,14],[14,16]].forEach(([a, b]) => seg(P(a), P(b), neutral));
+  const up = col(out.upright[0]);
+  seg(P(11), P(12), up); seg(P(11), P(23), up); seg(P(12), P(24), up);
+  seg(P(23), P(24), col(out.level[0]));
+  const kc = col(out.kneesOver[0]), hc = out.heelsDown[0] === "bad" ? css("--bad") : "rgba(255,255,255,.9)";
+  for (const Lg of [L, R]){
+    seg(Lg.hip, Lg.knee, kc); seg(Lg.knee, Lg.ankle, kc);
+    seg(Lg.ankle, Lg.heel, hc); seg(Lg.ankle, Lg.toe, hc); seg(Lg.heel, Lg.toe, hc);
+    seg(Lg.knee, { x: Lg.toe.x, y: Lg.toe.y, v: Lg.toe.v }, "rgba(255,214,102,.8)", lw * 0.6, [lw * 1.5, lw * 1.5]);   // knee → toe guide
+    for (const p of [Lg.hip, Lg.knee, Lg.ankle]){ if (p.v < 0.3) continue; ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(p.x, p.y, lw * 1.1, 0, Math.PI * 2); ctx.fill(); }
+  }
+}
+
+// ---------- plié: one rep = down and back up ----------
+// Phases: 10 standing, 11 going down, 12 at the bottom, 13 coming up.
+function trackPlie(s){
+  if (buf.length && s.t < buf[buf.length - 1].t) resetTracking();       // video looped
+  buf.push(s);
+  while (buf.length && s.t - buf[0].t > 3.0) buf.shift();
+  if (s.bend == null) return rep ? 12 : 10;
+  const prev = buf.filter(b => b.bend != null && s.t - b.t >= 0.2 && s.t - b.t <= 0.45).map(b => b.bend);
+  const vel = prev.length ? s.bend - prev[0] : 0;                          // ° per ~0.3 s
+  if (!rep){
+    if (s.bend <= 12) return 10;
+    let k = 0; buf.forEach((b, i) => { if (b.bend != null && b.bend <= 6) k = i; });
+    rep = { module: "plie", start: buf[k].t, side: "both", max: s.bend, tMax: s.t, phase: "down", tUp: null, errors: new Set(),
+            S: buf.slice(k), seen: new Set(), needStart: true, farDirty: true, hasFar: false };
+  } else rep.S.push(s);
+  if (s.bend > rep.max){ rep.max = s.bend; rep.tMax = s.t; rep.farDirty = true; }
+  if (rep.phase === "down" && s.bend < rep.max - 6){ rep.phase = "up"; rep.tUp = s.t; }
+  if (rep.max < 15 && s.bend < 6){ rep = null; return 10; }                // just a wobble
+  if (rep.phase === "up" && s.bend < 7){ finishPlie(); return 10; }
+  if (rep.phase === "up") return 13;
+  return Math.abs(vel) < 3 && s.bend > 15 ? 12 : 11;
+}
+
+function judgePlie(S){
+  const R = {};
+  const V = S.filter(s => s.bend != null);
+  if (V.length < 8){ REP.forEach(k => R[k] = ["na", "unclear"]); return { R, dir: null, V: null, mi: 0 }; }
+  let mi = 0; V.forEach((s, i) => { if (s.bend > V[mi].bend) mi = i; });
+  const max = V[mi].bend;
+  const kind = max >= cfg.grandMin ? "grand" : "demi";
+  const bottom = V.filter(s => s.bend >= max - 8);
+  const pos = bottom.filter(s => s.pos === "second").length > bottom.length / 2 ? "second" : "first";
+  V.forEach((s, i) => s.ph = s.bend < 8 ? 10 : s.bend >= max - 5 ? 12 : i < mi ? 11 : 13);
+
+  R.depth = kind === "grand" ? ["ok", "depthDeg", Math.round(max)]
+          : max >= cfg.pDemiMin ? ["ok", "depthDeg", Math.round(max)] : ["bad", "tooShallow", Math.round(max)];
+  const kt = V.filter(s => s.kMin != null);
+  if (!kt.length) R.kneeTrack = ["na", "toesHidden"];
+  else { const bad = kt.filter(s => s.kMin < cfg.kneeTrackMin).length / kt.length;
+         R.kneeTrack = bad <= 0.2 ? ["ok", "kneeOk"] : ["bad", "kneesInPct", pct(bad)]; }
+  const hv = V.filter(s => s.heelLift != null);
+  if (!hv.length) R.heels = ["na", "footUnclear"];
+  else {
+    const lifted = hv.filter(s => s.heelLift > cfg.demiH && !(pos === "first" && kind === "grand" && s.bend >= cfg.grandMin - 8));
+    R.heels = !lifted.length ? ["ok", "heelsGood"]
+            : kind === "demi" ? ["bad", "heelsUpDemi"] : pos === "second" ? ["bad", "heelsUp2nd"] : ["bad", "heelsEarly"];
+  }
+  const tl = V.filter(s => s.tilt != null).map(s => s.tilt);
+  R.uprightRep = tl.length ? [Math.max(...tl) <= cfg.tiltMax ? "ok" : "bad", "deg", Math.max(...tl).toFixed(1) + "°"] : ["na", "unclear"];
+  const hp = V.filter(s => s.hipTilt != null).map(s => s.hipTilt);
+  R.levelRep = hp.length ? [Math.max(...hp) <= cfg.hipMax ? "ok" : "bad", "deg", Math.max(...hp).toFixed(1) + "°"] : ["na", "needFront"];
+  const ev = V.filter(s => s.bendL != null && s.bendR != null && s.bend > 20).map(s => Math.abs(s.bendL - s.bendR));
+  R.even = ev.length ? [Math.max(...ev) <= cfg.evenMax ? "ok" : "bad", "deg", Math.round(Math.max(...ev)) + "°"] : ["na", "unclear"];
+  const tDown = V[mi].t - V[0].t, tUpDur = V[V.length - 1].t - V[mi].t;
+  const ratio = tDown > 0.05 ? tUpDur / tDown : 1;
+  const sp = `${tDown.toFixed(1)}s / ${tUpDur.toFixed(1)}s`;
+  R.smooth = ratio < 0.5 ? ["bad", "fastUp", sp] : ratio > 2 ? ["bad", "fastDown", sp] : ["ok", "speedOk", sp];
+  return { R, dir: `${pos}-${kind}`, V, mi };
+}
+
+function finishPlie(){
+  const r = rep; rep = null; trailEnd = performance.now();
+  if (video.currentTime - r.start < 0.6) return;
+  const res = judgePlie(r.S);
+  for (const k of REP) if (res.R[k][0] === "bad") r.errors.add(k);
+  const segs = res.V ? compressSegs(res.V) : null;
+  const peak = res.V ? res.mi / Math.max(1, res.V.length - 1) : 0;
+  const measured = REP.filter(k => res.R[k][0] !== "na");
+  const rec = { module: "plie", n: reps.length + 1, side: "both", dir: res.dir, errors: [...r.errors], R: res.R, segs, peak, measured,
+                at: Date.now(), t0: r.start, t1: video.currentTime,
+                snaps: { start: r.snapStart || null, far: r.hasFar ? farC.toDataURL("image/jpeg", 0.72) : null, close: null } };
+  reps.push(rec);
+  if (!sessionStart) sessionStart = rec.at;
+  pendingClose = rec;
+  labelFrames(r.start, video.currentTime, rec.n);
+  rec.id = uuid(); rec.sessionKey = sessionId; rec.sessionStart = sessionStart;
+  rec.coords = repCoords(rec.n);
+  if (reps.length === 1) sessionDancer = cloud.dancerId;
+  enqueueRep(rec);
+  lastRep = { ...res, note: null, side: "both", segs, peak };
+  lastDir = res.dir;
+  showRep(lastRep);
+  renderReps();
+  $("dirChip").querySelector("span").textContent = dirLabel(res.dir);
+  const firstBad = REP.find(k => res.R[k][0] === "bad");
+  if (firstBad) say(t("c_" + firstBad), true);
+}
+
+// ---------- plié: drawings for the Learn page (front view) ----------
+const PL = { first: { ankles: [114, 126] }, second: { ankles: [88, 152] } };
+const PL_HIPS = [113, 127], SHIN = 40, ANK_Y = 227;
+function plieSVG(pos, bend, o = {}){
+  const v = PL[pos], err = o.err;
+  const D = 2 * SHIN * Math.sin(rad(180 - bend) / 2);                      // hip-to-ankle distance at this bend
+  const legs = [0, 1].map(i => {
+    const ax = v.ankles[i], hx = PL_HIPS[i];
+    const dx = hx - ax, dy = Math.sqrt(Math.max(1, D * D - dx * dx));
+    const Hp = { x: hx, y: ANK_Y - dy }, A = { x: ax, y: ANK_Y };
+    const M = { x: (Hp.x + A.x) / 2, y: (Hp.y + A.y) / 2 }, h = Math.sqrt(Math.max(0, SHIN * SHIN - (D / 2) ** 2));
+    let px = -(A.y - Hp.y) / D, py = (A.x - Hp.x) / D;                      // unit perpendicular to the leg
+    const outward = i === 0 ? -1 : 1;
+    if (Math.sign(px || outward) !== outward) { px = -px; py = -py; }
+    const dirn = err === "kneesIn" ? -1 : 1;
+    const K = { x: M.x + px * h * dirn, y: M.y + py * h * dirn };
+    return { Hp, K, A, outward };
+  });
+  const standY = ANK_Y - Math.sqrt(4 * SHIN * SHIN - (PL_HIPS[0] - v.ankles[0]) ** 2);
+  const drop = legs[0].Hp.y - standY;
+  const heelUp = err === "heelsUp" ? 9 : (pos === "first" && bend > 75 ? (bend - 75) / 25 * 9 : 0);
+  const vb = o.tight ? [22, 30, 202, 232] : [0, 0, 240, 262];
+  const s = [`<svg viewBox="${vb.join(" ")}" role="img" aria-label="${esc(o.alt || "plié")}">`];
+  s.push(`<ellipse cx="120" cy="${FL + 5}" rx="84" ry="6" fill="#fdeaf2"/>`);
+  for (const g of legs){
+    s.push(`<path d="M${r1(g.Hp.x)} ${r1(g.Hp.y)} L${r1(g.K.x)} ${r1(g.K.y)} L${r1(g.A.x)} ${r1(g.A.y)}" stroke="#ffd2df" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`);
+    const toeX = g.A.x + g.outward * 24, heelX = g.A.x - g.outward * 2;
+    s.push(heelUp > 0
+      ? `<path d="M${r1(heelX)} ${r1(FL - 2 - heelUp)} L${r1(g.A.x + g.outward * 14)} ${FL - 1} L${r1(toeX)} ${FL - 1}" stroke="#f47aa8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
+      : `<path d="M${r1(heelX)} ${FL - 2} L${r1(toeX)} ${FL - 1}" stroke="#f47aa8" stroke-width="9" stroke-linecap="round"/>`);
+    if (o.guide) s.push(`<line x1="${r1(g.K.x)}" y1="${r1(g.K.y)}" x2="${r1(toeX)}" y2="${FL - 1}" stroke="#f2b33d" stroke-width="2" stroke-dasharray="4 4"/>`);
+  }
+  const tiltT = err === "tilt" ? ` rotate(-8 120 ${r1(150 + drop)})` : "";
+  s.push(`<g transform="translate(0 ${r1(drop)})${tiltT}"><use href="#dancerTop" x="0" y="0" width="240" height="262"/></g>`);
+  if (o.arrow){
+    const x = 214, y1 = o.arrow === "down" ? 120 : 190, y2 = o.arrow === "down" ? 190 : 120, dir = Math.sign(y2 - y1);
+    s.push(`<path d="M${x} ${y1} L${x} ${y2 - dir * 6}" stroke="#cf3577" stroke-width="3" stroke-linecap="round"/><path d="M${x} ${y2} L${x - 6} ${y2 - dir * 9} L${x + 6} ${y2 - dir * 9} Z" fill="#cf3577"/>`);
+  }
+  if (o.mark){
+    const c = o.focus === "knee" ? legs[1].K : o.focus === "heel" ? { x: legs[1].A.x, y: FL - 4 } : { x: 120, y: 110 + drop };
+    const col = o.mark === "bad" ? "#dc3550" : "#239063";
+    s.push(`<circle cx="${r1(c.x)}" cy="${r1(c.y)}" r="${o.focus === "torso" ? 30 : 17}" fill="none" stroke="${col}" stroke-width="2.5" stroke-dasharray="5 4"/>`);
+    const bx = vb[0] + 16, by = vb[1] + 16;
+    s.push(`<circle cx="${bx}" cy="${by}" r="14" fill="${col}"/><text x="${bx}" y="${by + 6}" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">${o.mark === "bad" ? "✗" : "✓"}</text>`);
+  }
+  s.push(`</svg>`);
+  return { svg: s.join("") };
+}
+// demi down–up, then grand down–up
+const PCYCLE = 9.6;
+function plieAnimAt(sec){
+  const tt = sec % PCYCLE;
+  const seg = (a, b, from, to, st) => tt >= a && tt < b ? [from + (to - from) * ease((tt - a) / (b - a)), st] : null;
+  return seg(0, 0.6, 0, 0, "stand") || seg(0.6, 2.2, 0, 48, "down") || seg(2.2, 2.7, 48, 48, "bottom") || seg(2.7, 4.3, 48, 0, "up")
+      || seg(4.3, 4.9, 0, 0, "stand") || seg(4.9, 7.0, 0, 98, "down") || seg(7.0, 7.5, 98, 98, "bottom") || seg(7.5, 9.6, 98, 0, "up") || [0, "stand"];
+}
+const PSTAGE_PH = { stand: 10, down: 11, bottom: 12, up: 13 };
+const PLIE_STEPS = [[0, null], [30, "down"], [48, null], [98, null], [30, "up"]];
+const PLIE_MISTAKES = [["kneesIn", "knee", 48], ["heelsUp", "heel", 48], ["tilt", "torso", 48]];
+
+// ---------- switching between moves ----------
+function applyModuleUI(){
+  document.body.dataset.mod = mod;
+  document.querySelectorAll("[data-m]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === mod)));
+}
+function setModule(m){
+  if (m === mod) return;
+  if (reps.length) newSession();                          // a session holds one move
+  resetTracking(); lastRep = null; lastDir = undefined;
+  mod = m; LIVE = MODS[m].live; REP = MODS[m].rep;
+  try { localStorage.setItem("ballet-module", m); } catch {}
+  $("liveChecks").innerHTML = ""; $("repChecks").innerHTML = "";
+  liveEls = buildList($("liveChecks"), LIVE, true); repEls = buildList($("repChecks"), REP, false);
+  $("repEmpty").hidden = false; $("repBody").hidden = true; $("repTitle").textContent = "";
+  $("dirChip").querySelector("span").textContent = "—";
+  applyModuleUI(); applyLang(); loadHistoryList();
+  if (document.body.classList.contains("view-learn")){ animT0 = performance.now(); renderLearn(); }
+}
+document.querySelectorAll("[data-m]").forEach(b => b.addEventListener("click", () => setModule(b.dataset.m)));
 
 // --- learn / practice switch ---
 function setView(view){
@@ -2152,6 +2566,7 @@ function voice(out){
   }
 }
 
+applyModuleUI();
 applyLang();
 setView(lsGet("ballet-view") || "learn");
 cloudInit();
